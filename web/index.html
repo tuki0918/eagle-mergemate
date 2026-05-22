@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MergeMate</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <svg class="icon-sprite" aria-hidden="true">
+      <symbol id="icon-play" viewBox="0 0 24 24">
+        <polygon points="6 3 20 12 6 21 6 3"></polygon>
+      </symbol>
+      <symbol id="icon-x" viewBox="0 0 24 24">
+        <path d="M18 6 6 18"></path>
+        <path d="m6 6 12 12"></path>
+      </symbol>
+      <symbol id="icon-trash-2" viewBox="0 0 24 24">
+        <path d="M10 11v6"></path>
+        <path d="M14 11v6"></path>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+        <path d="M3 6h18"></path>
+        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+      </symbol>
+      <symbol id="icon-circle-x" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="m15 9-6 6"></path>
+        <path d="m9 9 6 6"></path>
+      </symbol>
+      <symbol id="icon-download" viewBox="0 0 24 24">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" x2="12" y1="15" y2="3"></line>
+      </symbol>
+      <symbol id="icon-refresh" viewBox="0 0 24 24">
+        <path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"></path>
+        <path d="M21 3v5h-5"></path>
+        <path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"></path>
+        <path d="M3 21v-5h5"></path>
+      </symbol>
+      <symbol id="icon-layers" viewBox="0 0 24 24">
+        <path d="m12 2 9 5-9 5-9-5 9-5Z"></path>
+        <path d="m3 12 9 5 9-5"></path>
+        <path d="m3 17 9 5 9-5"></path>
+      </symbol>
+      <symbol id="icon-eye" viewBox="0 0 24 24">
+        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </symbol>
+      <symbol id="icon-eye-off" viewBox="0 0 24 24">
+        <path d="m2 2 20 20"></path>
+        <path d="M6.7 6.7C3.8 8.7 2 12 2 12s3 7 10 7c1.7 0 3.2-.4 4.5-1"></path>
+        <path d="M9.9 4.2C10.6 4.1 11.3 4 12 4c7 0 10 8 10 8a18 18 0 0 1-3.2 4.3"></path>
+      </symbol>
+      <symbol id="icon-check" viewBox="0 0 24 24">
+        <path d="M20 6 9 17l-5-5"></path>
+      </symbol>
+      <symbol id="icon-image" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+        <circle cx="9" cy="9" r="2"></circle>
+        <path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"></path>
+      </symbol>
+      <symbol id="icon-file-image" viewBox="0 0 24 24">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path>
+        <path d="M14 2v6h6"></path>
+        <circle cx="10" cy="13" r="2"></circle>
+        <path d="m20 17-2.2-2.2a2 2 0 0 0-2.8 0L10 20"></path>
+      </symbol>
+      <symbol id="icon-folder" viewBox="0 0 24 24">
+        <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.2a2 2 0 0 1-1.6-.8L10.4 4A2 2 0 0 0 8.8 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path>
+      </symbol>
+      <symbol id="icon-chevron-down" viewBox="0 0 24 24">
+        <path d="m6 9 6 6 6-6"></path>
+      </symbol>
+      <symbol id="icon-blend" viewBox="0 0 24 24">
+        <circle cx="9" cy="12" r="6"></circle>
+        <circle cx="15" cy="12" r="6"></circle>
+      </symbol>
+      <symbol id="icon-diff" viewBox="0 0 24 24">
+        <path d="M5 12h14"></path>
+        <path d="M12 5v14"></path>
+        <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+      </symbol>
+      <symbol id="icon-scale" viewBox="0 0 24 24">
+        <path d="m16 16 3-8 3 8c-.9 1.2-2 2-3 2s-2.1-.8-3-2Z"></path>
+        <path d="m2 16 3-8 3 8c-.9 1.2-2 2-3 2s-2.1-.8-3-2Z"></path>
+        <path d="M7 21h10"></path>
+        <path d="M12 3v18"></path>
+        <path d="M3 7h2c2 0 5-2 7-2s5 2 7 2h2"></path>
+      </symbol>
+      <symbol id="icon-fast-forward" viewBox="0 0 24 24">
+        <polygon points="13 19 22 12 13 5 13 19"></polygon>
+        <polygon points="2 19 11 12 2 5 2 19"></polygon>
+      </symbol>
+      <symbol id="icon-square-star" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+        <path d="m12 7 1.4 3 3.1.4-2.3 2.2.6 3.2L12 14.3 9.2 15.8l.6-3.2-2.3-2.2 3.1-.4L12 7Z"></path>
+      </symbol>
+      <symbol id="icon-image-upscale" viewBox="0 0 24 24">
+        <path d="M16 3h5v5"></path>
+        <path d="M21 3 14 10"></path>
+        <rect x="3" y="7" width="14" height="14" rx="2"></rect>
+        <circle cx="8" cy="12" r="1.5"></circle>
+        <path d="m17 17-2.2-2.2a2 2 0 0 0-2.8 0L7 20"></path>
+      </symbol>
+      <symbol id="icon-weight" viewBox="0 0 24 24">
+        <circle cx="12" cy="5" r="3"></circle>
+        <path d="M6.5 8h11L20 21H4L6.5 8Z"></path>
+      </symbol>
+      <symbol id="icon-sparkles" viewBox="0 0 24 24">
+        <path d="m12 3-1.9 5.1L5 10l5.1 1.9L12 17l1.9-5.1L19 10l-5.1-1.9L12 3Z"></path>
+        <path d="M5 3v4"></path>
+        <path d="M3 5h4"></path>
+        <path d="M19 17v4"></path>
+        <path d="M17 19h4"></path>
+      </symbol>
+      <symbol id="icon-grid" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+        <path d="M3 9h18"></path>
+        <path d="M3 15h18"></path>
+        <path d="M9 3v18"></path>
+        <path d="M15 3v18"></path>
+      </symbol>
+      <symbol id="icon-minus" viewBox="0 0 24 24">
+        <path d="M5 12h14"></path>
+      </symbol>
+      <symbol id="icon-plus" viewBox="0 0 24 24">
+        <path d="M5 12h14"></path>
+        <path d="M12 5v14"></path>
+      </symbol>
+      <symbol id="icon-chevron-right" viewBox="0 0 24 24">
+        <path d="m9 18 6-6-6-6"></path>
+      </symbol>
+      <symbol id="icon-arrow-left" viewBox="0 0 24 24">
+        <path d="m12 19-7-7 7-7"></path>
+        <path d="M19 12H5"></path>
+      </symbol>
+      <symbol id="icon-chevrons-left" viewBox="0 0 24 24">
+        <path d="m11 17-5-5 5-5"></path>
+        <path d="m18 17-5-5 5-5"></path>
+      </symbol>
+      <symbol id="icon-panel-left-open" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+        <path d="M9 3v18"></path>
+        <path d="m14 9 3 3-3 3"></path>
+      </symbol>
+      <symbol id="icon-panel-left-close" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+        <path d="M9 3v18"></path>
+        <path d="m17 9-3 3 3 3"></path>
+      </symbol>
+      <symbol id="icon-fit" viewBox="0 0 24 24">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+        <path d="M16 3h3a2 2 0 0 1 2 2v3"></path>
+        <path d="M21 16v3a2 2 0 0 1-2 2h-3"></path>
+        <path d="M8 21H5a2 2 0 0 1-2-2v-3"></path>
+      </symbol>
+      <symbol id="icon-actual-size" viewBox="0 0 24 24">
+        <path d="M15 3h6v6"></path>
+        <path d="M9 21H3v-6"></path>
+        <path d="M21 3 14 10"></path>
+        <path d="M3 21l7-7"></path>
+      </symbol>
+      <symbol id="icon-fullscreen" viewBox="0 0 24 24">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+        <path d="M16 3h3a2 2 0 0 1 2 2v3"></path>
+        <path d="M21 16v3a2 2 0 0 1-2 2h-3"></path>
+        <path d="M8 21H5a2 2 0 0 1-2-2v-3"></path>
+      </symbol>
+      <symbol id="icon-arrow-left-right" viewBox="0 0 24 24">
+        <path d="M8 3 4 7l4 4"></path>
+        <path d="M4 7h16"></path>
+        <path d="m16 21 4-4-4-4"></path>
+        <path d="M20 17H4"></path>
+      </symbol>
+      <symbol id="icon-arrow-up-down" viewBox="0 0 24 24">
+        <path d="m8 8 4-4 4 4"></path>
+        <path d="M12 4v16"></path>
+        <path d="m16 16-4 4-4-4"></path>
+      </symbol>
+      <symbol id="icon-star" viewBox="0 0 24 24">
+        <path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.2L5.8 21 7 14.2l-5-4.9 6.9-1L12 2Z"></path>
+      </symbol>
+    </svg>
+    <main class="app-shell">
+      <header class="app-header">
+        <div class="title-block">
+          <h1>MergeMate</h1>
+          <p>Find matching pixel regions and align two images by translation.</p>
+        </div>
+      </header>
+
+      <section class="workspace two-pane view-input" aria-label="alignment workspace">
+        <section class="input-panel" aria-label="input images">
+          <div class="input-copy">
+            <div class="pane-title">Composite Images</div>
+            <p class="pane-description">Select two images, a background, and detection mode to get started.</p>
+          </div>
+
+          <div class="input-card-grid">
+
+          <section class="input-card empty" id="imageACard">
+            <div class="card-header">
+              <span>Image A</span>
+            </div>
+            <div class="selected-image-shell">
+              <canvas id="baseCanvas"></canvas>
+              <div class="input-meta">
+                <span class="input-meta-icon" aria-hidden="true">
+                  <svg class="lucide-icon"><use href="#icon-image"></use></svg>
+                </span>
+                <span class="input-meta-text">
+                  <span id="imageAName">-</span>
+                  <span id="imageASize">-</span>
+                </span>
+                <button id="clearImageA" class="clear-image-button" type="button" title="Remove Image A" aria-label="Remove Image A">
+                  <svg class="lucide-icon" aria-hidden="true"><use href="#icon-trash-2"></use></svg>
+                </button>
+              </div>
+            </div>
+            <label class="file-control drop-zone" for="imageA">
+              <input id="imageA" type="file" accept="image/png,image/jpeg,image/webp,image/*">
+              <span class="visually-hidden">Drop Image A</span>
+              <span class="drop-zone-content">
+                <svg class="lucide-icon drop-icon" aria-hidden="true"><use href="#icon-file-image"></use></svg>
+                <span class="drop-zone-label">Drop or select image</span>
+              </span>
+            </label>
+          </section>
+
+          <section class="input-card empty" id="imageBCard">
+            <div class="card-header">
+              <span>Image B</span>
+            </div>
+            <div class="selected-image-shell">
+              <canvas id="overlayCanvas"></canvas>
+              <div class="input-meta">
+                <span class="input-meta-icon" aria-hidden="true">
+                  <svg class="lucide-icon"><use href="#icon-image"></use></svg>
+                </span>
+                <span class="input-meta-text">
+                  <span id="imageBName">-</span>
+                  <span id="imageBSize">-</span>
+                </span>
+                <button id="clearImageB" class="clear-image-button" type="button" title="Remove Image B" aria-label="Remove Image B">
+                  <svg class="lucide-icon" aria-hidden="true"><use href="#icon-trash-2"></use></svg>
+                </button>
+              </div>
+            </div>
+            <label class="file-control drop-zone" for="imageB">
+              <input id="imageB" type="file" accept="image/png,image/jpeg,image/webp,image/*">
+              <span class="visually-hidden">Drop Image B</span>
+              <span class="drop-zone-content">
+                <svg class="lucide-icon drop-icon" aria-hidden="true"><use href="#icon-file-image"></use></svg>
+                <span class="drop-zone-label">Drop or select image</span>
+              </span>
+            </label>
+          </section>
+          </div>
+
+          <section class="tip-card" aria-label="tip">
+            <svg class="lucide-icon tip-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
+            <div>
+              <strong>Tip</strong>
+              <span>Use lossless images for the best results.</span>
+            </div>
+          </section>
+
+          <form class="settings-panel" id="controls">
+            <fieldset>
+              <legend>Settings</legend>
+              <div class="setting-block layer-order-control">
+                <span class="control-label">Layer Order</span>
+                <select id="order" class="native-select">
+                  <option value="a-base">Use A as base, overlay B</option>
+                  <option value="b-base">Use B as base, overlay A</option>
+                </select>
+                <div class="segmented-control" role="group" aria-label="Layer Order" data-select-target="order">
+                  <button type="button" data-value="a-base"><svg class="lucide-icon seg-icon"><use href="#icon-layers"></use></svg><span>A base</span></button>
+                  <button type="button" data-value="b-base"><svg class="lucide-icon seg-icon"><use href="#icon-layers"></use></svg><span>B base</span></button>
+                </div>
+              </div>
+              <div class="option-grid basic-settings">
+                <input id="outputMode" type="hidden" value="union">
+                <div class="background-setting">
+                  <span>Background</span>
+                  <div class="background-control">
+                    <label class="color-chip" title="Background color">
+                      <input id="backgroundColor" type="color" value="#ffffff" aria-label="Background color">
+                    </label>
+                    <label class="transparent-chip" title="Use default transparent background in the exported PNG">
+                      <span class="checkbox-box"><svg class="lucide-icon" aria-hidden="true"><use href="#icon-check"></use></svg></span>
+                      <span>Default</span>
+                      <input id="transparentBackground" type="checkbox" checked>
+                    </label>
+                  </div>
+                  <div class="background-options" role="group" aria-label="Background">
+                    <button class="background-option selected" type="button" data-background-choice="transparent">
+                      <span class="background-swatch swatch-transparent"></span>
+                      <span>Default</span>
+                    </button>
+                    <button class="background-option" type="button" data-background-choice="white">
+                      <span class="background-swatch swatch-white"></span>
+                      <span>White</span>
+                    </button>
+                    <button class="background-option" type="button" data-background-choice="black">
+                      <span class="background-swatch swatch-black"></span>
+                      <span>Black</span>
+                    </button>
+                    <button class="background-option" type="button" data-background-choice="custom">
+                      <span class="background-swatch swatch-custom"></span>
+                      <span>Custom</span>
+                    </button>
+                  </div>
+                </div>
+                <label class="preset-setting">
+                  <span class="preset-card-icon"><svg class="lucide-icon" aria-hidden="true"><use id="presetDisplayIcon" href="#icon-scale"></use></svg></span>
+                  <select id="preset">
+                    <option value="balanced">Balanced</option>
+                    <option value="precise">Precise</option>
+                    <option value="fast">Fast</option>
+                    <option value="huge">Huge images</option>
+                  </select>
+                  <span class="preset-summary">
+                    <strong id="presetDisplayName">Balanced</strong>
+                    <span id="presetDisplayDescription">Best balance of accuracy and detail</span>
+                  </span>
+                  <svg class="lucide-icon select-chevron" aria-hidden="true"><use href="#icon-chevron-down"></use></svg>
+                </label>
+              </div>
+            </fieldset>
+
+            <div class="hidden-tuning" aria-hidden="true">
+              <div class="option-grid">
+                <label>
+                  <span>tileSize</span>
+                  <input id="tileSize" type="number" min="4" step="1" value="32">
+                </label>
+                <label>
+                  <span>tileStep</span>
+                  <input id="tileStep" type="number" min="1" step="1" value="16">
+                </label>
+                <label>
+                  <span>sourceStep</span>
+                  <input id="sourceStep" type="number" min="1" step="1" value="4">
+                </label>
+                <label>
+                  <span>refineRadius</span>
+                  <input id="refineRadius" type="number" min="0" step="1" value="3">
+                </label>
+                <label>
+                  <span>maxOverlayTiles</span>
+                  <input id="maxOverlayTiles" type="number" min="1" step="1" value="512">
+                </label>
+                <label>
+                  <span>maxCandidates</span>
+                  <input id="maxCandidates" type="number" min="1" step="1" value="16">
+                </label>
+                <label>
+                  <span>maxVerifiedCandidates</span>
+                  <input id="maxVerifiedCandidates" type="number" min="1" step="1" value="8">
+                </label>
+                <label>
+                  <span>minComparedPixels</span>
+                  <input id="minComparedPixels" type="number" min="1" step="1" value="4096">
+                </label>
+                <label>
+                  <span>ambiguityRatio</span>
+                  <input id="ambiguityRatio" type="number" min="0.01" max="0.99" step="0.01" value="0.98">
+                </label>
+              </div>
+            </div>
+
+            <div class="action-stack">
+              <div id="inputProgress" class="input-progress hidden" aria-live="polite"></div>
+              <button id="runButton" class="primary-action" type="button"><svg class="lucide-icon"><use href="#icon-play"></use></svg><span>Run</span></button>
+              <button id="cancelButton" class="secondary-action cancel-inline hidden" type="button" disabled><svg class="lucide-icon"><use href="#icon-x"></use></svg><span>Cancel</span></button>
+            </div>
+          </form>
+        </section>
+
+        <section class="preview-panel" aria-label="output preview">
+          <div class="preview-header">
+            <div>
+              <div class="pane-title">Result Preview</div>
+              <p class="pane-description">Preview the merged result with the selected offset.</p>
+            </div>
+            <div class="preview-actions">
+              <button id="backToInputButton" class="secondary-action compact-action" type="button">
+                <svg class="lucide-icon" aria-hidden="true"><use href="#icon-chevron-right"></use></svg>
+                <span>Input</span>
+              </button>
+              <button id="previewCancelButton" class="preview-cancel-button" type="button">
+                <svg class="lucide-icon" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+                <span>Back</span>
+              </button>
+            </div>
+          </div>
+          <figure class="merged-preview empty">
+            <div class="stack-order-switch" role="group" aria-label="Top image">
+              <button type="button" data-stack-top="A" aria-pressed="false">A</button>
+              <span class="stack-order-divider" aria-hidden="true"></span>
+              <button type="button" data-stack-top="B" aria-pressed="true">B</button>
+            </div>
+            <div class="preview-empty-state">
+              <svg class="lucide-icon preview-empty-icon" aria-hidden="true"><use href="#icon-image"></use></svg>
+              <strong>Choose two images to begin</strong>
+              <span>Choose Image A and Image B, then run alignment.</span>
+            </div>
+            <div class="preview-view-menu" aria-label="preview view controls">
+              <select id="previewMode" class="native-select">
+                <option value="merged">Merged</option>
+                <option value="overlay">Transparent overlay</option>
+                <option value="diff">Difference</option>
+                <option value="quality">Match quality</option>
+              </select>
+              <div class="segmented-control compact-segments vertical-segments" role="group" aria-label="View Mode" data-select-target="previewMode">
+                <button type="button" data-value="merged" title="Merged" data-tooltip="Merged"><svg class="lucide-icon seg-icon"><use href="#icon-image"></use></svg></button>
+                <button type="button" data-value="overlay" title="Transparent overlay" data-tooltip="Transparent overlay"><svg class="lucide-icon seg-icon"><use href="#icon-blend"></use></svg></button>
+                <button type="button" data-value="diff" title="Difference" data-tooltip="Difference"><svg class="lucide-icon seg-icon"><use href="#icon-diff"></use></svg></button>
+                <button type="button" data-value="quality" title="Match quality" data-tooltip="Match quality"><svg class="lucide-icon seg-icon"><use href="#icon-sparkles"></use></svg></button>
+              </div>
+              <label class="outline-toggle" title="Show outlines" data-tooltip="Show outlines">
+                <svg class="lucide-icon toggle-icon" aria-hidden="true"><use href="#icon-grid"></use></svg>
+                <input id="showFrameOverlay" type="checkbox">
+              </label>
+            </div>
+            <label id="overlayOpacityControl" class="overlay-opacity-control" hidden>
+              <span>Overlay Opacity <output id="overlayOpacityValue">50%</output></span>
+              <input id="overlayOpacity" type="range" min="0" max="1" step="0.05" value="0.5">
+            </label>
+            <canvas id="mergedCanvas"></canvas>
+            <div class="zoom-dock" aria-label="zoom controls">
+              <select id="zoomLevel" class="native-select">
+                <option value="fit" selected>Fit</option>
+                <option value="0.01">1%</option>
+                <option value="0.025">2.5%</option>
+                <option value="0.05">5%</option>
+                <option value="0.1">10%</option>
+                <option value="0.25">25%</option>
+                <option value="0.5">50%</option>
+                <option value="1">100%</option>
+                <option value="2">200%</option>
+                <option value="4">400%</option>
+                <option value="8">800%</option>
+                <option value="custom" hidden>Custom</option>
+              </select>
+              <button id="zoomOutButton" type="button" title="Zoom out" aria-label="Zoom out" data-tooltip="Zoom out"><svg class="lucide-icon"><use href="#icon-minus"></use></svg></button>
+              <output id="zoomValue" class="zoom-value">100%</output>
+              <button id="zoomInButton" type="button" title="Zoom in" aria-label="Zoom in" data-tooltip="Zoom in"><svg class="lucide-icon"><use href="#icon-plus"></use></svg></button>
+              <span class="zoom-divider" aria-hidden="true"></span>
+              <button id="zoomFitButton" type="button" title="Fit to view" aria-label="Fit to view" data-tooltip="Fit to view"><svg class="lucide-icon"><use href="#icon-fit"></use></svg></button>
+              <button id="zoomActualButton" type="button" title="Actual size" aria-label="Actual size" data-tooltip="Actual size"><svg class="lucide-icon"><use href="#icon-actual-size"></use></svg></button>
+            </div>
+          </figure>
+
+          <section class="result-panel" aria-label="alignment results">
+            <a id="downloadLink" class="download disabled" aria-disabled="true"><svg class="lucide-icon"><use href="#icon-download"></use></svg><span>Download</span></a>
+            <dl class="metrics">
+              <div>
+                <dt><span class="metric-icon" aria-hidden="true"><svg class="lucide-icon"><use href="#icon-arrow-left-right"></use></svg></span><span>Offset X</span></dt>
+                <dd id="metricOffsetX">-</dd>
+              </div>
+              <div>
+                <dt><span class="metric-icon" aria-hidden="true"><svg class="lucide-icon"><use href="#icon-arrow-up-down"></use></svg></span><span>Offset Y</span></dt>
+                <dd id="metricOffsetY">-</dd>
+              </div>
+              <div>
+                <dt><span class="metric-icon" aria-hidden="true"><svg class="lucide-icon"><use href="#icon-star"></use></svg></span><span>Score</span></dt>
+                <dd id="metricScore">-</dd>
+              </div>
+            </dl>
+            <button id="detailsDrawerToggle" class="details-drawer-toggle" type="button" aria-label="Candidates" aria-expanded="false" aria-controls="detailsDrawer" disabled>
+              <span>Candidates</span>
+              <svg class="lucide-icon details-toggle-icon-open" aria-hidden="true"><use href="#icon-panel-left-open"></use></svg>
+              <svg class="lucide-icon details-toggle-icon-close" aria-hidden="true"><use href="#icon-panel-left-close"></use></svg>
+            </button>
+          </section>
+        </section>
+
+        <aside id="detailsDrawer" class="details-drawer" aria-label="manual offset and candidates">
+          <div class="drawer-copy">
+            <div class="pane-title">Candidates</div>
+            <p class="pane-description">Review alignment candidates and apply the best match.</p>
+          </div>
+          <div class="details-drawer-header">
+            <span>Candidates</span>
+            <button id="detailsDrawerClose" class="details-collapse-button" type="button" title="Close details" aria-label="Close details">
+              <svg class="lucide-icon" aria-hidden="true"><use href="#icon-chevrons-left"></use></svg>
+            </button>
+          </div>
+          <section class="detail-section result-adjust">
+            <div class="detail-section-title"><span>Manual Offset</span></div>
+              <p id="manualOffsetHelp" class="detail-help-text">No result yet.</p>
+              <div id="manualOffsetControls" class="adjust-panel" aria-label="manual adjustment" hidden>
+                <div class="adjust-grid">
+                  <label>
+                    <span>X</span>
+                    <input id="manualOffsetX" type="number" step="1" value="0">
+                  </label>
+                  <label>
+                    <span>Y</span>
+                    <input id="manualOffsetY" type="number" step="1" value="0">
+                  </label>
+                </div>
+              </div>
+          </section>
+          <section class="detail-section candidate-panel" aria-label="alignment candidates">
+              <div class="detail-section-title candidate-title">
+                <span>Alignment Candidates</span>
+              </div>
+              <div id="candidatePreviewStatus" class="candidate-preview-status" hidden>Select a candidate to apply its offset.</div>
+              <div id="candidateList" class="candidate-list">No candidates yet.</div>
+          </section>
+        </aside>
+
+      </section>
+    </main>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "js-png-inpaint",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "RGBA image alignment and merge preview tooling.",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./png-node": "./src/png-node.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "web": "node scripts/serve-web.js"
+  },
+  "peerDependencies": {
+    "pngjs": "^7.0.0"
+  },
+  "peerDependenciesMeta": {
+    "pngjs": {
+      "optional": true
+    }
+  }
+}

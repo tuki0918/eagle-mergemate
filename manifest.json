@@ -1,0 +1,33 @@
+{
+  "id": "8e0949c7-8d9a-4abe-982b-c237855b7fc0",
+  "version": "0.1.0",
+  "platform": "all",
+  "arch": "all",
+  "name": "MergeMate",
+  "description": "Align two images by matching visual regions, preview candidate offsets, and export the merged result.",
+  "logo": "/logo.png",
+  "keywords": [
+    "png",
+    "image",
+    "alignment",
+    "merge",
+    "composite"
+  ],
+  "devTools": false,
+  "main": {
+    "url": "web/index.html",
+    "width": 1280,
+    "height": 840,
+    "minWidth": 1280,
+    "minHeight": 840,
+    "alwaysOnTop": false,
+    "frame": true,
+    "fullscreenable": true,
+    "maximizable": true,
+    "minimizable": true,
+    "resizable": true,
+    "backgroundColor": "#f4f1ec",
+    "multiple": false,
+    "runAfterInstall": false
+  }
+}
