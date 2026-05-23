@@ -1,6 +1,6 @@
 # Eagle | MergeMate Plugin
 
-An Eagle window plugin for automatically aligning two images, previewing the merged result, and exporting it.
+An Eagle window plugin for automatically aligning two images, comparing merge previews, fine-tuning offsets, and exporting it.
 
 ![](docs/screenshot.png)
 ![](docs/screenshot_result.png)

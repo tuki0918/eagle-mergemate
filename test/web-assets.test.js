@@ -21,10 +21,10 @@ test("local web server redirects root to the web entry path for relative assets"
 test("Eagle window plugin manifest points at the browser UI", async () => {
   const manifest = JSON.parse(await readFile(new URL("../manifest.json", import.meta.url), "utf8"));
 
-  assert.equal(manifest.id, "js-png-inpaint-window");
+  assert.equal(manifest.id, "8e0949c7-8d9a-4abe-982b-c237855b7fc0");
   assert.equal(manifest.version, "0.1.0");
   assert.equal(manifest.name, "MergeMate");
-  assert.equal(manifest.description, "Align two images by matching visual regions, preview candidate offsets, and export the merged result.");
+  assert.equal(manifest.description, "Automatically align two images, compare merge previews, fine-tune offsets, and exporting it.");
   assert.equal(manifest.platform, "all");
   assert.equal(manifest.arch, "all");
   assert.equal(manifest.logo, "/logo.png");

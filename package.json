@@ -1,9 +1,9 @@
 {
-  "name": "js-png-inpaint",
+  "name": "eagle-mergemate",
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "description": "RGBA image alignment and merge preview tooling.",
+  "description": "Eagle plugin for aligning two images, comparing merge previews, and exporting it.",
   "main": "src/index.js",
   "exports": {
     ".": "./src/index.js",

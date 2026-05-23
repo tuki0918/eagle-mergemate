@@ -4,7 +4,7 @@
   "platform": "all",
   "arch": "all",
   "name": "MergeMate",
-  "description": "Align two images by matching visual regions, preview candidate offsets, and export the merged result.",
+  "description": "Automatically align two images, compare merge previews, fine-tune offsets, and exporting it.",
   "logo": "/logo.png",
   "keywords": [
     "png",
