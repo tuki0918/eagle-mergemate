@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "description": "Eagle plugin for aligning two images, comparing merge previews, and exporting it.",
+  "description": "An Eagle window plugin for automatically aligning two images, comparing merge previews, fine-tuning offsets, and exporting it.",
   "main": "src/index.js",
   "exports": {
     ".": "./src/index.js",
