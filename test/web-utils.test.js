@@ -274,8 +274,8 @@ test("buildCandidateStatsSummary formats candidate difference metrics", () => {
   }), {
     score: "0.988",
     offset: "x 12 / y -4",
-    mismatch: "Mismatch 12.34%",
-    mismatchRate: "12.34%",
+    mismatch: "Match 87.66%",
+    mismatchRate: "87.66%",
     averageDiff: "Avg diff 4.57",
     overlap: "Overlap 10,000 px",
     compared: "Compared 8,000 px",
@@ -284,7 +284,7 @@ test("buildCandidateStatsSummary formats candidate difference metrics", () => {
   assert.deepEqual(buildCandidateStatsSummary({ score: Number.NaN, offsetX: 0, offsetY: 0 }), {
     score: "-",
     offset: "x 0 / y 0",
-    mismatch: "Mismatch -",
+    mismatch: "Match -",
     mismatchRate: "-",
     averageDiff: "Avg diff -",
     overlap: "Overlap -",

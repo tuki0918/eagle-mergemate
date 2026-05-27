@@ -556,7 +556,7 @@ function renderCandidates(candidates) {
       candidateCell(String(index + 1), "candidate-rank"),
       candidateMetric("Score", summary.score, "candidate-score"),
       candidateMetric("X / Y", `${candidate.offsetX ?? "-"} / ${candidate.offsetY ?? "-"}`, "candidate-offset"),
-      candidateMetric("Mismatch", summary.mismatchRate, "candidate-mismatch"),
+      candidateMetric("Match", summary.mismatchRate, "candidate-mismatch"),
       action,
     );
     button.addEventListener("click", () => {

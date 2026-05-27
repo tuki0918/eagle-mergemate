@@ -69,11 +69,12 @@ export function buildAlignmentOptions(values = {}) {
 }
 
 export function buildCandidateStatsSummary(candidate = {}, stats) {
+  const matchRatio = Number.isFinite(stats?.mismatchRatio) ? 1 - stats.mismatchRatio : undefined;
   return {
     score: formatNumber(candidate.score, 3),
     offset: `x ${candidate.offsetX ?? "-"} / y ${candidate.offsetY ?? "-"}`,
-    mismatch: `Mismatch ${formatPercent(stats?.mismatchRatio)}`,
-    mismatchRate: formatPercent(stats?.mismatchRatio),
+    mismatch: `Match ${formatPercent(matchRatio)}`,
+    mismatchRate: formatPercent(matchRatio),
     averageDiff: `Avg diff ${formatNumber(stats?.averageDiff, 2)}`,
     overlap: `Overlap ${formatPixelCount(stats?.overlapPixels)}`,
     compared: `Compared ${formatPixelCount(stats?.comparedPixels)}`,
