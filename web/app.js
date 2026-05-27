@@ -658,10 +658,18 @@ function getStackPair() {
   if (!currentBase || !currentOverlay || !currentAlignment) return undefined;
   const topIsOverlay = getOverlayImageLabel() === stackTop;
   return topIsOverlay
-    ? { bottom: currentBase, top: currentOverlay, alignment: currentAlignment }
+    ? {
+        bottom: currentBase,
+        top: currentOverlay,
+        bottomLabel: getBaseImageLabel(),
+        topLabel: getOverlayImageLabel(),
+        alignment: currentAlignment,
+      }
     : {
         bottom: currentOverlay,
         top: currentBase,
+        bottomLabel: getOverlayImageLabel(),
+        topLabel: getBaseImageLabel(),
         alignment: {
           offsetX: -currentAlignment.offsetX,
           offsetY: -currentAlignment.offsetY,
@@ -754,18 +762,19 @@ function drawQualityPreview() {
 
 function drawFrameOverlay(alignment = currentAlignment) {
   if (!els.showFrameOverlay.checked || !currentBase || !currentOverlay || !alignment) return;
+  const pair = getStackPair();
+  if (!pair) return;
   const ctx = els.mergedCanvas.getContext("2d");
   const rects = buildAlignmentFrameRects({
-    base: currentBase,
-    overlay: currentOverlay,
-    alignment,
+    base: pair.bottom,
+    overlay: pair.top,
+    alignment: pair.alignment,
     outputMode: els.outputMode.value,
   });
-  const imageAStyle = { color: "#f25aa8", dash: [12, 8], label: "A" };
-  const imageBStyle = { color: "#1f8cff", dash: [12, 8], label: "B" };
-  const styles = getBaseImageLabel() === "A"
-    ? { base: imageAStyle, overlay: imageBStyle }
-    : { base: imageBStyle, overlay: imageAStyle };
+  const styles = {
+    base: getFrameStyleForImageLabel(pair.bottomLabel),
+    overlay: getFrameStyleForImageLabel(pair.topLabel),
+  };
 
   ctx.save();
   ctx.lineWidth = Math.max(2, Math.ceil(Math.min(els.mergedCanvas.width, els.mergedCanvas.height) / 900));
@@ -781,6 +790,12 @@ function drawFrameOverlay(alignment = currentAlignment) {
     drawFrameLabel(ctx, rect, style.color, style.label, labelFontSize);
   }
   ctx.restore();
+}
+
+function getFrameStyleForImageLabel(label) {
+  return label === "A"
+    ? { color: "#f25aa8", dash: [12, 8], label: "A" }
+    : { color: "#1f8cff", dash: [12, 8], label: "B" };
 }
 
 function drawFrameLabel(ctx, rect, color, label, fontSize) {

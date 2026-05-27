@@ -205,6 +205,15 @@ test("candidate rows display metric labels above values with internal separators
   assert.match(css, /\.candidate-action \{[\s\S]*padding: 6px 14px;/);
 });
 
+test("frame outline follows selected stack order", async () => {
+  const app = await readFile(new URL("../web/app.js", import.meta.url), "utf8");
+
+  assert.match(app, /topIsOverlay[\s\S]*bottomLabel: getBaseImageLabel\(\),[\s\S]*topLabel: getOverlayImageLabel\(\)/);
+  assert.match(app, /bottomLabel: getOverlayImageLabel\(\),[\s\S]*topLabel: getBaseImageLabel\(\)/);
+  assert.match(app, /function drawFrameOverlay\(alignment = currentAlignment\) \{[\s\S]*const pair = getStackPair\(\);[\s\S]*base: pair\.bottom,[\s\S]*overlay: pair\.top,[\s\S]*alignment: pair\.alignment/);
+  assert.match(app, /base: getFrameStyleForImageLabel\(pair\.bottomLabel\),[\s\S]*overlay: getFrameStyleForImageLabel\(pair\.topLabel\)/);
+});
+
 test("manual offset inputs use normal text weight", async () => {
   const css = await readFile(new URL("../web/styles.css", import.meta.url), "utf8");
 
