@@ -99,6 +99,33 @@ test("short-circuits identical source and overlay images", () => {
   assert.equal(result.mismatchedPixels, 0);
 });
 
+test("short-circuits near-identical same-size images", () => {
+  const source = syntheticBase(240, 180);
+  const overlay = crop(source, 0, 0, 240, 180, (x, y, original) => {
+    if (x < 104 || x >= 136 || y < 74 || y >= 106) return original;
+    return [255 - original[0], original[1], original[2], original[3]];
+  });
+  const events = [];
+
+  const result = findBestAlignment(source, overlay, {
+    tileSize: 8,
+    tileStep: 8,
+    sourceStep: 4,
+    refineRadius: 1,
+    maxCandidates: 8,
+    minComparedPixels: 256,
+    onProgress: (event) => events.push(event.phase),
+  });
+
+  assert.equal(result.status, "ok");
+  assert.equal(result.offsetX, 0);
+  assert.equal(result.offsetY, 0);
+  assert.ok(result.exactMatchRatio > 0.97);
+  assert.ok(result.mismatchedPixels > 0);
+  assert.deepEqual(result.candidates.map((candidate) => [candidate.offsetX, candidate.offsetY]), [[0, 0]]);
+  assert.equal(events.includes("Selecting feature tiles"), false);
+});
+
 test("reports monotonic progress while finding an alignment", () => {
   const source = syntheticBase(96, 80);
   const overlay = crop(source, 23, 17, 40, 32);

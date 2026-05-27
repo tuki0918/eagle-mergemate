@@ -12,6 +12,7 @@ const DEFAULT_OPTIONS = {
   minComparedPixels: 1024,
   tolerance: 0,
   ambiguityRatio: 0.98,
+  sameSizeMatchRatio: 0.97,
   minBestSecondGap: 0.02,
   ignoreTransparent: true,
   overlayPhaseCoverage: true,
@@ -25,10 +26,10 @@ export function findBestAlignment(source, overlay, options = {}) {
   validateMask(opts.validMask, overlay, "validMask");
 
   emitProgress(opts, 0, "Preparing");
-  const identical = findIdenticalAlignment(source, overlay, opts);
-  if (identical) {
+  const sameSizeAlignment = findSameSizeAlignment(source, overlay, opts);
+  if (sameSizeAlignment) {
     emitProgress(opts, 1, "Alignment complete");
-    return identical;
+    return sameSizeAlignment;
   }
 
   const overlayTiles = selectOverlayTiles(overlay, opts);
@@ -233,42 +234,55 @@ function normalizeOptions(options) {
   if (!Number.isInteger(opts.refineRadius) || opts.refineRadius < 0) {
     throw new TypeError("refineRadius must be a non-negative integer");
   }
+  if (!Number.isFinite(opts.sameSizeMatchRatio) || opts.sameSizeMatchRatio < 0 || opts.sameSizeMatchRatio > 1) {
+    throw new TypeError("sameSizeMatchRatio must be a ratio between 0 and 1");
+  }
   return opts;
 }
 
-function findIdenticalAlignment(source, overlay, opts) {
+function findSameSizeAlignment(source, overlay, opts) {
   if (source.width !== overlay.width || source.height !== overlay.height) {
     return undefined;
   }
 
   let comparedPixels = 0;
+  let matchedPixels = 0;
+  let mismatchedPixels = 0;
+  let absoluteError = 0;
   for (let i = 0, pixel = 0; i < source.data.length; i += 4, pixel += 1) {
-    if (
-      source.data[i] !== overlay.data[i] ||
-      source.data[i + 1] !== overlay.data[i + 1] ||
-      source.data[i + 2] !== overlay.data[i + 2] ||
-      source.data[i + 3] !== overlay.data[i + 3]
-    ) {
-      return undefined;
-    }
-    if (isOverlayPixelComparable(overlay, pixel % overlay.width, Math.floor(pixel / overlay.width), opts)) {
-      comparedPixels += 1;
+    if (!isOverlayPixelComparable(overlay, pixel % overlay.width, Math.floor(pixel / overlay.width), opts)) continue;
+    const dr = Math.abs(source.data[i] - overlay.data[i]);
+    const dg = Math.abs(source.data[i + 1] - overlay.data[i + 1]);
+    const db = Math.abs(source.data[i + 2] - overlay.data[i + 2]);
+    const da = Math.abs(source.data[i + 3] - overlay.data[i + 3]);
+    absoluteError += dr + dg + db + da;
+    comparedPixels += 1;
+    if (dr <= opts.tolerance && dg <= opts.tolerance && db <= opts.tolerance && da <= opts.tolerance) {
+      matchedPixels += 1;
+    } else {
+      mismatchedPixels += 1;
     }
   }
 
   if (comparedPixels < opts.minComparedPixels) {
     return noMatch("insufficient-comparable-pixels");
   }
+  const exactMatchRatio = matchedPixels / comparedPixels;
+  if (exactMatchRatio < opts.sameSizeMatchRatio) {
+    return undefined;
+  }
 
+  const meanAbsoluteError = absoluteError / (comparedPixels * 4);
+  const score = exactMatchRatio - Math.min(0.5, meanAbsoluteError / 510);
   const candidate = {
     offsetX: 0,
     offsetY: 0,
     votes: 0,
-    score: 1,
-    exactMatchRatio: 1,
-    meanAbsoluteError: 0,
-    matchedPixels: comparedPixels,
-    mismatchedPixels: 0,
+    score,
+    exactMatchRatio,
+    meanAbsoluteError,
+    matchedPixels,
+    mismatchedPixels,
     comparedPixels,
   };
   return {
@@ -276,11 +290,11 @@ function findIdenticalAlignment(source, overlay, opts) {
     reason: undefined,
     offsetX: 0,
     offsetY: 0,
-    score: 1,
-    exactMatchRatio: 1,
-    meanAbsoluteError: 0,
-    matchedPixels: comparedPixels,
-    mismatchedPixels: 0,
+    score,
+    exactMatchRatio,
+    meanAbsoluteError,
+    matchedPixels,
+    mismatchedPixels,
     comparedPixels,
     candidates: [candidate],
   };
