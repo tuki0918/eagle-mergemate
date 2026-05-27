@@ -160,7 +160,7 @@ test("alignment result labels and values center beside left icons", async () => 
 
   assert.match(html, /<span>Offset X<\/span>/);
   assert.match(html, /<span>Offset Y<\/span>/);
-  assert.match(html, /<span>Score<\/span>/);
+  assert.match(html, /<span>Match<\/span>/);
   assert.match(css, /\.result-panel \{[\s\S]*grid-template-columns: minmax\(190px, 250px\) repeat\(3, minmax\(112px, 1fr\)\) 64px;/);
   assert.match(css, /\.result-panel \{[\s\S]*gap: 14px;/);
   assert.match(css, /\.metrics div \{[\s\S]*display: grid;[\s\S]*grid-template-columns: 34px minmax\(0, 1fr\);[\s\S]*grid-template-rows: auto auto;[\s\S]*align-content: center;[\s\S]*min-height: 48px;/);
@@ -174,11 +174,11 @@ test("alignment result labels and values center beside left icons", async () => 
   assert.match(css, /\.preview-header \{[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto;/);
 });
 
-test("manual offset score follows matching candidate only", async () => {
+test("manual offset match follows matching candidate only", async () => {
   const app = await readFile(new URL("../web/app.js", import.meta.url), "utf8");
 
   assert.match(app, /function findCandidateByOffset\(offsetX, offsetY, candidates = latestCandidates\) \{[\s\S]*candidate\.offsetX === offsetX && candidate\.offsetY === offsetY/);
-  assert.match(app, /function updateManualMetrics\(\) \{[\s\S]*const matchingCandidate = findCandidateByOffset\(currentAlignment\.offsetX, currentAlignment\.offsetY\);[\s\S]*els\.metricScore\.textContent = matchingCandidate \? formatNumber\(matchingCandidate\.score\) : "-";/);
+  assert.match(app, /function updateManualMetrics\(\) \{[\s\S]*const matchingCandidate = findCandidateByOffset\(currentAlignment\.offsetX, currentAlignment\.offsetY\);[\s\S]*const stats = matchingCandidate \? buildCandidateStats\(matchingCandidate\) : undefined;[\s\S]*els\.metricScore\.textContent = matchingCandidate \? buildCandidateStatsSummary\(matchingCandidate, stats\)\.mismatchRate : "-";/);
 });
 
 test("inactive preview mode buttons are visually muted", async () => {
@@ -194,7 +194,9 @@ test("candidate rows display metric labels above values with internal separators
   const app = await readFile(new URL("../web/app.js", import.meta.url), "utf8");
 
   assert.match(app, /wrapper\.append\(labelEl, valueEl\);/);
-  assert.match(css, /\.candidate-row \{[\s\S]*grid-template-columns: 38px minmax\(62px, 0\.65fr\) minmax\(96px, 1fr\) minmax\(82px, 0\.9fr\) auto;/);
+  assert.doesNotMatch(app, /candidateMetric\("Score"/);
+  assert.match(app, /candidateMetric\("Match", summary\.mismatchRate, "candidate-mismatch"\),[\s\S]*candidateMetric\("X \/ Y", `\$\{candidate\.offsetX \?\? "-"\} \/ \$\{candidate\.offsetY \?\? "-"\}`, "candidate-offset"\)/);
+  assert.match(css, /\.candidate-row \{[\s\S]*grid-template-columns: 38px minmax\(82px, 0\.9fr\) minmax\(96px, 1fr\) auto;/);
   assert.match(css, /\.candidate-metric \{[\s\S]*display: grid;[\s\S]*grid-template-rows: auto auto;[\s\S]*justify-items: center;[\s\S]*padding-inline: 10px;[\s\S]*text-align: center;/);
   assert.match(css, /\.candidate-metric \+ \.candidate-metric \{[\s\S]*border-left: 1px solid var\(--border-soft\);/);
   assert.doesNotMatch(css, /\.candidate-score \{[\s\S]*border-left:/);

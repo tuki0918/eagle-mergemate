@@ -529,7 +529,8 @@ function updateManualMetrics() {
   els.metricOffsetX.textContent = String(currentAlignment.offsetX);
   els.metricOffsetY.textContent = String(currentAlignment.offsetY);
   const matchingCandidate = findCandidateByOffset(currentAlignment.offsetX, currentAlignment.offsetY);
-  els.metricScore.textContent = matchingCandidate ? formatNumber(matchingCandidate.score) : "-";
+  const stats = matchingCandidate ? buildCandidateStats(matchingCandidate) : undefined;
+  els.metricScore.textContent = matchingCandidate ? buildCandidateStatsSummary(matchingCandidate, stats).mismatchRate : "-";
 }
 
 function renderCandidates(candidates) {
@@ -554,9 +555,8 @@ function renderCandidates(candidates) {
     const action = candidateCell(isApplied ? "Applied" : "Apply", "candidate-action");
     button.append(
       candidateCell(String(index + 1), "candidate-rank"),
-      candidateMetric("Score", summary.score, "candidate-score"),
-      candidateMetric("X / Y", `${candidate.offsetX ?? "-"} / ${candidate.offsetY ?? "-"}`, "candidate-offset"),
       candidateMetric("Match", summary.mismatchRate, "candidate-mismatch"),
+      candidateMetric("X / Y", `${candidate.offsetX ?? "-"} / ${candidate.offsetY ?? "-"}`, "candidate-offset"),
       action,
     );
     button.addEventListener("click", () => {
@@ -962,7 +962,11 @@ function clearCanvas(canvas) {
 function updateMetrics(result) {
   els.metricOffsetX.textContent = result.offsetX ?? "-";
   els.metricOffsetY.textContent = result.offsetY ?? "-";
-  els.metricScore.textContent = formatNumber(result.score);
+  els.metricScore.textContent = formatMatchRatio(result.exactMatchRatio);
+}
+
+function formatMatchRatio(ratio) {
+  return Number.isFinite(ratio) ? `${formatNumber(ratio * 100, 2)}%` : "-";
 }
 
 function resetMetrics() {

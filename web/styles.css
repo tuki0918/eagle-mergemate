@@ -1341,7 +1341,7 @@ input[type="file"] {
 
 .candidate-row {
   display: grid;
-  grid-template-columns: 38px minmax(62px, 0.65fr) minmax(96px, 1fr) minmax(82px, 0.9fr) auto;
+  grid-template-columns: 38px minmax(82px, 0.9fr) minmax(96px, 1fr) auto;
   gap: 0;
   align-items: center;
   min-height: 62px;
@@ -1413,10 +1413,6 @@ input[type="file"] {
   font-size: 11px;
   text-transform: none;
   letter-spacing: 0;
-}
-
-.candidate-score strong {
-  font-size: 15px;
 }
 
 .candidate-offset {
