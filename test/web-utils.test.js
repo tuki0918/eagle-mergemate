@@ -55,7 +55,7 @@ test("buildAlignmentOptions falls back for invalid values", () => {
   assert.equal(options.tileSize, 32);
   assert.equal(options.tileStep, 16);
   assert.equal(options.sourceStep, 4);
-  assert.equal(options.refineRadius, 3);
+  assert.equal(options.refineRadius, 1);
   assert.equal(options.ambiguityRatio, 0.98);
 });
 
@@ -94,6 +94,14 @@ test("getPresetOptions returns known alignment presets", () => {
   assert.equal(getPresetOptions("precise").sourceStep, 1);
   assert.equal(getPresetOptions("unknown").sourceStep, 4);
   assert.deepEqual(Object.keys(PRESETS), ["fast", "balanced", "precise", "huge"]);
+});
+
+test("detection presets keep candidate verification bounded for similar images", () => {
+  const verificationBudget = (preset) => preset.maxCandidates * (preset.refineRadius * 2 + 1) ** 2;
+
+  assert.ok(verificationBudget(PRESETS.fast) <= 100);
+  assert.ok(verificationBudget(PRESETS.balanced) <= 160);
+  assert.ok(verificationBudget(PRESETS.huge) <= 120);
 });
 
 test("describeFailure returns English guidance", () => {
@@ -306,7 +314,7 @@ test("buildDefaultSettings returns reset values for controls", () => {
     tileSize: 32,
     tileStep: 16,
     sourceStep: 4,
-    refineRadius: 3,
+    refineRadius: 1,
     maxOverlayTiles: 512,
     maxCandidates: 16,
     maxVerifiedCandidates: 8,
