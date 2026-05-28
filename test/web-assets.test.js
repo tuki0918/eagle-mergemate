@@ -187,6 +187,15 @@ test("manual offset match follows matching candidate only", async () => {
   assert.match(app, /function updateManualMetrics\(\) \{[\s\S]*const matchingCandidate = findCandidateByOffset\(currentAlignment\.offsetX, currentAlignment\.offsetY\);[\s\S]*const stats = matchingCandidate \? buildCandidateStats\(matchingCandidate\) : undefined;[\s\S]*els\.metricScore\.textContent = matchingCandidate \? buildCandidateStatsSummary\(matchingCandidate, stats\)\.mismatchRate : "-";/);
 });
 
+test("manual offset supports keyboard nudging from applied candidates", async () => {
+  const app = await readFile(new URL("../web/app.js", import.meta.url), "utf8");
+
+  assert.match(app, /document\.addEventListener\("keydown", handleManualOffsetKeydown\);/);
+  assert.match(app, /function handleManualOffsetKeydown\(event\) \{[\s\S]*const step = event\.shiftKey \? 10 : 1;[\s\S]*ArrowLeft[\s\S]*nudgeOffset\(-step, 0\);[\s\S]*ArrowRight[\s\S]*nudgeOffset\(step, 0\);[\s\S]*ArrowUp[\s\S]*nudgeOffset\(0, -step\);[\s\S]*ArrowDown[\s\S]*nudgeOffset\(0, step\);/);
+  assert.match(app, /function isEditableKeyTarget\(target\) \{[\s\S]*target\.closest\("input, textarea, select, \[contenteditable='true'\]"\)/);
+  assert.match(app, /function applyCandidate\(candidate, index\) \{[\s\S]*setManualOffset\(candidate\.offsetX, candidate\.offsetY\);[\s\S]*applyManualOffset\(\);/);
+});
+
 test("inactive preview mode buttons are visually muted", async () => {
   const css = await readFile(new URL("../web/styles.css", import.meta.url), "utf8");
 

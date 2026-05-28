@@ -194,6 +194,7 @@ els.resetSettingsButton?.addEventListener("click", () => {
 
 els.manualOffsetX.addEventListener("input", applyManualOffsetFromInputs);
 els.manualOffsetY.addEventListener("input", applyManualOffsetFromInputs);
+document.addEventListener("keydown", handleManualOffsetKeydown);
 
 els.detailsDrawerToggle?.addEventListener("click", () => {
   if (!hasPreviewContent()) return;
@@ -461,6 +462,28 @@ function nudgeOffset(dx, dy) {
   els.manualOffsetX.value = String((Number.parseInt(els.manualOffsetX.value, 10) || 0) + dx);
   els.manualOffsetY.value = String((Number.parseInt(els.manualOffsetY.value, 10) || 0) + dy);
   applyManualOffset();
+}
+
+function handleManualOffsetKeydown(event) {
+  if (!hasPreviewContent() || isEditableKeyTarget(event.target)) return;
+  const step = event.shiftKey ? 10 : 1;
+  if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    nudgeOffset(-step, 0);
+  } else if (event.key === "ArrowRight") {
+    event.preventDefault();
+    nudgeOffset(step, 0);
+  } else if (event.key === "ArrowUp") {
+    event.preventDefault();
+    nudgeOffset(0, -step);
+  } else if (event.key === "ArrowDown") {
+    event.preventDefault();
+    nudgeOffset(0, step);
+  }
+}
+
+function isEditableKeyTarget(target) {
+  return target instanceof Element && Boolean(target.closest("input, textarea, select, [contenteditable='true']"));
 }
 
 function setManualOffset(offsetX, offsetY) {
