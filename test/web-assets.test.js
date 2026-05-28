@@ -22,7 +22,7 @@ test("Eagle window plugin manifest points at the browser UI", async () => {
   const manifest = JSON.parse(await readFile(new URL("../manifest.json", import.meta.url), "utf8"));
 
   assert.equal(manifest.id, "8e0949c7-8d9a-4abe-982b-c237855b7fc0");
-  assert.equal(manifest.version, "0.1.0");
+  assert.equal(manifest.version, "0.2.0");
   assert.equal(manifest.name, "MergeMate");
   assert.equal(manifest.description, "Automatically align two images and export the merged result.");
   assert.equal(manifest.platform, "all");
