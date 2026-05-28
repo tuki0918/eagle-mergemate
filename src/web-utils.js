@@ -12,18 +12,6 @@ export const DEFAULT_WEB_OPTIONS = {
 };
 
 export const PRESETS = {
-  fast: {
-    tileSize: 32,
-    tileStep: 24,
-    sourceStep: 4,
-    refineRadius: 1,
-    maxOverlayTiles: 256,
-    maxCandidates: 10,
-    maxVerifiedCandidates: 5,
-    minComparedPixels: 2048,
-    ambiguityRatio: 0.96,
-    cornerAnchorMode: "accept",
-  },
   balanced: DEFAULT_WEB_OPTIONS,
   precise: {
     tileSize: 24,

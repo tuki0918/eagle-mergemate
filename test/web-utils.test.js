@@ -93,19 +93,18 @@ test("createDifferenceImage highlights changed pixels", () => {
 });
 
 test("getPresetOptions returns known alignment presets", () => {
-  assert.equal(getPresetOptions("fast").sourceStep, 4);
-  assert.equal(getPresetOptions("fast").cornerAnchorMode, "accept");
+  assert.equal(getPresetOptions("balanced").sourceStep, 4);
+  assert.equal(getPresetOptions("balanced").cornerAnchorMode, "accept");
   assert.equal(getPresetOptions("precise").sourceStep, 1);
   assert.equal(getPresetOptions("precise").cornerAnchorMode, "candidate");
   assert.equal(getPresetOptions("unknown").sourceStep, 4);
   assert.equal(getPresetOptions("unknown").cornerAnchorMode, "accept");
-  assert.deepEqual(Object.keys(PRESETS), ["fast", "balanced", "precise"]);
+  assert.deepEqual(Object.keys(PRESETS), ["balanced", "precise"]);
 });
 
 test("detection presets keep candidate verification bounded for similar images", () => {
   const verificationBudget = (preset) => preset.maxCandidates * (preset.refineRadius * 2 + 1) ** 2;
 
-  assert.ok(verificationBudget(PRESETS.fast) <= 100);
   assert.ok(verificationBudget(PRESETS.balanced) <= 160);
 });
 
@@ -145,7 +144,7 @@ test("buildProcessingLog summarizes completed alignment work", () => {
   const rows = buildProcessingLog({
     workerUsed: true,
     elapsedMs: 1234,
-    preset: "fast",
+    preset: "balanced",
     outputMode: "union",
     merged: { width: 7000, height: 5000 },
     result: {
@@ -158,7 +157,7 @@ test("buildProcessingLog summarizes completed alignment work", () => {
   assert.deepEqual(rows, [
     ["Processing", "Web Worker"],
     ["Time", "1.2s"],
-    ["Preset", "fast"],
+    ["Preset", "balanced"],
     ["Output", "union / 7000 x 5000 px"],
     ["Candidates", "2"],
     ["Comparison", "matched 1,200 / compared 2,400"],

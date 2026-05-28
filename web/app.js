@@ -397,7 +397,7 @@ function cancelAlignment() {
     return;
   }
   setBusy(false);
-  setStatus("warn", "Processing cancelled. For large images, try Fast first, then Balanced or Precise.");
+  setStatus("warn", "Processing cancelled. For large images, try Standard first, then Precise.");
 }
 
 function applyPreset(name) {
@@ -1495,8 +1495,7 @@ function updateBackgroundChoiceSelection(explicitChoice) {
 
 function updatePresetDisplay() {
   const labels = {
-    balanced: ["Balanced", "Best balance of accuracy and detail", "#icon-scale"],
-    fast: ["Fast", "Quick scan for simple images", "#icon-fast-forward"],
+    balanced: ["Standard", "Standard matching for most images", "#icon-scale"],
     precise: ["Precise", "More verification for detailed edges", "#icon-star"],
   };
   const [name, description, icon] = labels[els.preset.value] ?? labels.balanced;
