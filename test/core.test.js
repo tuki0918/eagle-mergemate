@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   compositeAligned,
   findBestAlignment,
+  findBestAlignmentWithFallback,
 } from "../src/index.js";
 
 function image(width, height, pixelAt) {
@@ -79,6 +80,49 @@ test("finds arbitrary pixel offsets when sourceStep skips source positions", () 
   assert.equal(result.status, "ok");
   assert.equal(result.offsetX, 23);
   assert.equal(result.offsetY, 17);
+});
+
+test("uses coarse-to-fine alignment to seed full-resolution verification", () => {
+  const source = syntheticBase(180, 144);
+  const overlay = crop(source, 60, 42, 80, 64);
+  const events = [];
+
+  const result = findBestAlignment(source, overlay, {
+    tileSize: 8,
+    tileStep: 8,
+    sourceStep: 4,
+    refineRadius: 1,
+    maxCandidates: 6,
+    minComparedPixels: 256,
+    coarseToFine: true,
+    coarseMinDimension: 120,
+    coarseMaxDimension: 60,
+    onProgress: (event) => events.push(event.phase),
+  });
+
+  assert.equal(result.status, "ok");
+  assert.equal(result.offsetX, 60);
+  assert.equal(result.offsetY, 42);
+  assert.equal(result.coarseToFine, true);
+  assert.equal(events.includes("Coarse alignment"), true);
+});
+
+test("falls back to precise alignment when the primary settings find no match", () => {
+  const source = syntheticBase(96, 80);
+  const overlay = crop(source, 23, 17, 40, 32);
+
+  const result = findBestAlignmentWithFallback(
+    source,
+    overlay,
+    { tileSize: 64, tileStep: 16, minComparedPixels: 256 },
+    { tileSize: 8, tileStep: 4, maxCandidates: 5, minComparedPixels: 256 },
+  );
+
+  assert.equal(result.status, "ok");
+  assert.equal(result.offsetX, 23);
+  assert.equal(result.offsetY, 17);
+  assert.equal(result.fallbackUsed, true);
+  assert.equal(result.fallbackPreset, "precise");
 });
 
 test("short-circuits identical source and overlay images", () => {

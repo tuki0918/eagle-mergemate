@@ -30,6 +30,9 @@ test("buildAlignmentOptions parses positive integer and numeric fields", () => {
     minComparedPixels: "2048",
     ambiguityRatio: "0.91",
     cornerAnchorMode: "candidate",
+    coarseToFine: "true",
+    coarseMinDimension: "1200",
+    coarseMaxDimension: "600",
   });
 
   assert.deepEqual(options, {
@@ -43,6 +46,9 @@ test("buildAlignmentOptions parses positive integer and numeric fields", () => {
     minComparedPixels: 2048,
     ambiguityRatio: 0.91,
     cornerAnchorMode: "candidate",
+    coarseToFine: true,
+    coarseMinDimension: 1200,
+    coarseMaxDimension: 600,
   });
 });
 
@@ -60,6 +66,9 @@ test("buildAlignmentOptions falls back for invalid values", () => {
   assert.equal(options.refineRadius, 1);
   assert.equal(options.ambiguityRatio, 0.98);
   assert.equal(options.cornerAnchorMode, "accept");
+  assert.equal(options.coarseToFine, false);
+  assert.equal(options.coarseMinDimension, 1800);
+  assert.equal(options.coarseMaxDimension, 900);
 });
 
 test("normalizeBackgroundColor accepts hex colors and falls back to white", () => {
@@ -109,29 +118,29 @@ test("detection presets keep candidate verification bounded for similar images",
 });
 
 test("describeFailure returns English guidance", () => {
-  assert.match(describeFailure({ status: "ambiguous" }), /Multiple/);
-  assert.match(describeFailure({ status: "no-match", reason: "no-informative-tiles" }), /informative/);
+  assert.match(describeFailure({ status: "ambiguous" }), /Too many similar areas/);
+  assert.match(describeFailure({ status: "no-match", reason: "no-candidate-offsets" }), /No matching area found/);
+  assert.match(describeFailure({ status: "no-match", reason: "no-verifiable-candidates" }), /Found candidates, but none matched well enough/);
+  assert.match(describeFailure({ status: "no-match", reason: "not-enough-overlap" }), /Not enough overlapping area/);
   assert.match(describeFailure({ status: "ok" }), /succeeded/);
 });
 
 test("describeFailure suggests concrete next settings for ambiguous matches", () => {
   const message = describeFailure({ status: "ambiguous", score: 0.98, comparedPixels: 1200 });
-  assert.match(message, /candidate list/);
-  assert.match(message, /quality map/);
-  assert.match(message, /ambiguityRatio/);
+  assert.match(message, /Too many similar areas/);
+  assert.match(message, /repeating patterns/);
 });
 
 test("describeFailure suggests overlap checks for unverifiable candidates", () => {
   const message = describeFailure({ status: "no-match", reason: "no-verifiable-candidates" });
-  assert.match(message, /minComparedPixels/);
-  assert.match(message, /overlap/);
+  assert.match(message, /Found candidates, but none matched well enough/);
+  assert.match(message, /different crop/);
 });
 
 test("describeFailure suggests precision changes when no offset candidates are found", () => {
   const message = describeFailure({ status: "no-match", reason: "no-candidate-offsets" });
-  assert.match(message, /precise preset/);
-  assert.match(message, /sourceStep/);
-  assert.match(message, /tileStep/);
+  assert.match(message, /No matching area found/);
+  assert.match(message, /offset manually/);
 });
 
 test("formatBytes formats image memory sizes", () => {
@@ -148,6 +157,9 @@ test("buildProcessingLog summarizes completed alignment work", () => {
     outputMode: "union",
     merged: { width: 7000, height: 5000 },
     result: {
+      coarseToFine: true,
+      fallbackUsed: true,
+      fallbackPreset: "precise",
       candidates: [{}, {}],
       matchedPixels: 1200,
       comparedPixels: 2400,
@@ -158,6 +170,8 @@ test("buildProcessingLog summarizes completed alignment work", () => {
     ["Processing", "Web Worker"],
     ["Time", "1.2s"],
     ["Preset", "standard"],
+    ["Strategy", "coarse-to-fine"],
+    ["Fallback", "precise"],
     ["Output", "union / 7000 x 5000 px"],
     ["Candidates", "2"],
     ["Comparison", "matched 1,200 / compared 2,400"],
@@ -325,5 +339,8 @@ test("buildDefaultSettings returns reset values for controls", () => {
     minComparedPixels: 4096,
     ambiguityRatio: 0.98,
     cornerAnchorMode: "accept",
+    coarseToFine: true,
+    coarseMinDimension: 1800,
+    coarseMaxDimension: 900,
   });
 });

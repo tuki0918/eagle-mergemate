@@ -1,4 +1,4 @@
-import { compositeAligned, findBestAlignment } from "../src/index.js";
+import { compositeAligned, findBestAlignmentWithFallback } from "../src/index.js";
 import {
   buildAlignmentOptions,
   buildAlignmentFrameRects,
@@ -826,15 +826,29 @@ async function runAlignmentJob(base, overlay, options, outputOptions, onProgress
     }
   }
 
-  const result = findBestAlignment(base, overlay, {
-    ...options,
-    onProgress,
-  });
+  const result = findBestAlignmentWithFallback(
+    base,
+    overlay,
+    {
+      ...options,
+      onProgress,
+    },
+    shouldUsePreciseFallback(options)
+      ? {
+          ...getPresetOptions("precise"),
+          onProgress,
+        }
+      : undefined,
+  );
   onProgress({ phase: "Building merged image", progress: 0.99 });
   const merged = result.status === "ok"
     ? compositeAligned(base, overlay, result, outputOptions)
     : undefined;
   return { result, merged, workerUsed: false };
+}
+
+function shouldUsePreciseFallback(options) {
+  return els.preset.value === "standard" && options.coarseToFine === true;
 }
 
 function runAlignmentInWorker(base, overlay, options, outputOptions, onProgress) {
@@ -892,6 +906,7 @@ function runAlignmentInWorker(base, overlay, options, outputOptions, onProgress)
       base: toTransferableImage(base),
       overlay: toTransferableImage(overlay),
       options,
+      fallbackOptions: shouldUsePreciseFallback(options) ? getPresetOptions("precise") : undefined,
       outputOptions,
     };
     const transfers = [payload.base.buffer, payload.overlay.buffer];

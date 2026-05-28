@@ -9,6 +9,9 @@ export const DEFAULT_WEB_OPTIONS = {
   minComparedPixels: 4096,
   ambiguityRatio: 0.98,
   cornerAnchorMode: "accept",
+  coarseToFine: true,
+  coarseMinDimension: 1800,
+  coarseMaxDimension: 900,
 };
 
 export const PRESETS = {
@@ -36,6 +39,8 @@ const INTEGER_FIELDS = [
   "maxCandidates",
   "maxVerifiedCandidates",
   "minComparedPixels",
+  "coarseMinDimension",
+  "coarseMaxDimension",
 ];
 
 export function buildAlignmentOptions(values = {}) {
@@ -46,6 +51,7 @@ export function buildAlignmentOptions(values = {}) {
   options.refineRadius = parseNonNegativeInteger(values.refineRadius, DEFAULT_WEB_OPTIONS.refineRadius);
   options.ambiguityRatio = parseRatio(values.ambiguityRatio, DEFAULT_WEB_OPTIONS.ambiguityRatio);
   options.cornerAnchorMode = parseCornerAnchorMode(values.cornerAnchorMode, DEFAULT_WEB_OPTIONS.cornerAnchorMode);
+  options.coarseToFine = values.coarseToFine === true || values.coarseToFine === "true";
   return options;
 }
 
@@ -136,19 +142,22 @@ export function describeFailure(result) {
     return "Alignment succeeded. Check candidates or manual offset if you need to verify the placement.";
   }
   if (result.status === "ambiguous") {
-    return "Multiple candidates have similar scores. Preview alternatives in the candidate list and check the quality map. For sky, walls, or repeated patterns, try a smaller tileSize, higher maxOverlayTiles, or a higher ambiguityRatio.";
+    return "Too many similar areas. The images may contain repeating patterns or large flat regions. Try Precise, choose a more distinctive image pair, or adjust the offset manually.";
   }
   if (result.reason === "no-informative-tiles") {
-    return "No informative tiles were found. The image may contain mostly flat color, sky, or walls. Try a more distinctive crop, reduce tileSize, or use the precise preset.";
+    return "No matching area found. The images may not share a distinctive visible area. Try Precise, use images with more detail, or adjust the offset manually.";
   }
   if (result.reason === "no-candidate-offsets") {
-    return "No matching offset candidates were found. Check for scale, rotation, or compression noise, then try a smaller sourceStep, smaller tileStep, or the precise preset.";
+    return "No matching area found. The images may not share a distinctive visible area. Try Precise, use images with more detail, or adjust the offset manually.";
   }
   if (result.reason === "no-verifiable-candidates") {
-    return "Candidates were found but could not be verified. The overlap may be small or too few pixels may be comparable. Lower minComparedPixels and check the output bounds and base/overlay order.";
+    return "Found candidates, but none matched well enough. The images may use a different crop, include edits, or contain compression differences. Try Precise or adjust the offset manually.";
+  }
+  if (result.reason === "not-enough-overlap") {
+    return "Not enough overlapping area. The images do not appear to share enough of the same visible region. Try images with a larger shared region or adjust the offset manually.";
   }
   if (result.status === "no-match") {
-    return "Alignment failed. Check for scale, rotation, color changes, JPEG/WebP compression noise, or insufficient overlap. Also try the precise preset or manual offset.";
+    return "No matching area found. The images may not share enough distinctive detail. Try Precise or adjust the offset manually.";
   }
   return "Could not finalize a result. Change the settings and run alignment again.";
 }
@@ -283,17 +292,22 @@ export function formatBytes(bytes) {
 export function buildProcessingLog({ workerUsed, elapsedMs, preset, outputMode, merged, result } = {}) {
   const width = Number(merged?.width) || 0;
   const height = Number(merged?.height) || 0;
-  return [
+  const rows = [
     ["Processing", workerUsed ? "Web Worker" : "main thread"],
     ["Time", formatElapsedMs(elapsedMs)],
     ["Preset", String(preset || "-")],
+  ];
+  if (result?.coarseToFine) rows.push(["Strategy", "coarse-to-fine"]);
+  if (result?.fallbackUsed) rows.push(["Fallback", String(result.fallbackPreset || "precise")]);
+  rows.push(
     ["Output", `${String(outputMode || "-")} / ${width} x ${height} px`],
     ["Candidates", String(result?.candidates?.length ?? 0)],
     [
       "Comparison",
       `matched ${Number(result?.matchedPixels ?? 0).toLocaleString()} / compared ${Number(result?.comparedPixels ?? 0).toLocaleString()}`,
     ],
-  ];
+  );
+  return rows;
 }
 
 export function buildOutputPrecheck({ image, outputMode, transparentBackground, backgroundColor } = {}) {

@@ -298,6 +298,7 @@ test("worker message listener remains active after progress messages", async () 
 test("web app passes preset-only detection strategy options", async () => {
   const app = await readFile(new URL("../web/app.js", import.meta.url), "utf8");
 
+  assert.match(app, /findBestAlignmentWithFallback/);
   assert.match(app, /function readOptionValues\(\) \{[\s\S]*const values = \{ \.\.\.getPresetOptions\(els\.preset\.value\) \};[\s\S]*return buildAlignmentOptions\(values\);/);
 });
 

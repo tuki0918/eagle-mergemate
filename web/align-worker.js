@@ -1,16 +1,19 @@
-import { compositeAligned, findBestAlignment } from "../src/index.js";
+import { compositeAligned, findBestAlignmentWithFallback } from "../src/index.js";
 
 self.addEventListener("message", (event) => {
-  const { base, overlay, options, outputOptions } = event.data;
+  const { base, overlay, options, fallbackOptions, outputOptions } = event.data;
   try {
     restoreImageData(base);
     restoreImageData(overlay);
-    const result = findBestAlignment(base, overlay, {
-      ...options,
-      onProgress: (progress) => {
-        self.postMessage({ type: "progress", ...progress });
-      },
-    });
+    const progress = (event) => {
+      self.postMessage({ type: "progress", ...event });
+    };
+    const result = findBestAlignmentWithFallback(
+      base,
+      overlay,
+      { ...options, onProgress: progress },
+      fallbackOptions ? { ...fallbackOptions, onProgress: progress } : undefined,
+    );
     if (result.status !== "ok") {
       self.postMessage({ type: "result", ok: true, result, merged: undefined });
       return;

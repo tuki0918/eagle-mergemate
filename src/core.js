@@ -17,6 +17,9 @@ const DEFAULT_OPTIONS = {
   minBestSecondGap: 0.02,
   ignoreTransparent: true,
   overlayPhaseCoverage: true,
+  coarseToFine: false,
+  coarseMinDimension: 1800,
+  coarseMaxDimension: 900,
 };
 
 export function findBestAlignment(source, overlay, options = {}) {
@@ -32,6 +35,12 @@ export function findBestAlignment(source, overlay, options = {}) {
   if (cornerAlignment) {
     emitProgress(opts, 1, "Alignment complete");
     return cornerAlignment;
+  }
+
+  const coarseAlignment = findCoarseToFineAlignment(source, overlay, opts);
+  if (coarseAlignment?.status === "ok") {
+    emitProgress(opts, 1, "Alignment complete");
+    return coarseAlignment;
   }
 
   const overlayTiles = selectOverlayTiles(overlay, opts);
@@ -69,10 +78,11 @@ export function findBestAlignment(source, overlay, options = {}) {
   refined.sort(compareVerification);
   const [best, second] = refined;
   const status = classifyBest(best, second, opts);
+  const reason = classifyReason(best, second, status, opts);
 
   const output = {
     status,
-    reason: status === "ok" ? undefined : status,
+    reason,
     offsetX: best.offsetX,
     offsetY: best.offsetY,
     score: best.score,
@@ -85,6 +95,20 @@ export function findBestAlignment(source, overlay, options = {}) {
   };
   emitProgress(opts, 1, "Alignment complete");
   return output;
+}
+
+export function findBestAlignmentWithFallback(source, overlay, primaryOptions = {}, fallbackOptions) {
+  const primary = findBestAlignment(source, overlay, primaryOptions);
+  if (primary.status !== "no-match" || !fallbackOptions) {
+    return primary;
+  }
+  const fallback = findBestAlignment(source, overlay, fallbackOptions);
+  return {
+    ...fallback,
+    fallbackUsed: fallback.status === "ok",
+    fallbackPreset: "precise",
+    primaryResult: primary,
+  };
 }
 
 export function compositeAligned(base, overlay, alignment, options = {}) {
@@ -242,7 +266,92 @@ function normalizeOptions(options) {
   if (!["accept", "candidate", "off"].includes(opts.cornerAnchorMode)) {
     throw new TypeError("cornerAnchorMode must be one of: accept, candidate, off");
   }
+  if (!Number.isInteger(opts.coarseMinDimension) || opts.coarseMinDimension < 1) {
+    throw new TypeError("coarseMinDimension must be a positive integer");
+  }
+  if (!Number.isInteger(opts.coarseMaxDimension) || opts.coarseMaxDimension < 1) {
+    throw new TypeError("coarseMaxDimension must be a positive integer");
+  }
   return opts;
+}
+
+function findCoarseToFineAlignment(source, overlay, opts) {
+  if (!opts.coarseToFine) return undefined;
+  const maxDimension = Math.max(source.width, source.height, overlay.width, overlay.height);
+  if (maxDimension < opts.coarseMinDimension || maxDimension <= opts.coarseMaxDimension) return undefined;
+
+  emitProgress(opts, 0.02, "Coarse alignment");
+  const scale = opts.coarseMaxDimension / maxDimension;
+  const coarseSource = scaleImageNearest(source, scale);
+  const coarseOverlay = scaleImageNearest(overlay, scale);
+  const coarse = findBestAlignment(coarseSource, coarseOverlay, {
+    ...opts,
+    coarseToFine: false,
+    tileSize: Math.max(4, Math.round(opts.tileSize * scale)),
+    tileStep: Math.max(1, Math.round(opts.tileStep * scale)),
+    sourceStep: 1,
+    refineRadius: 1,
+    maxOverlayTiles: Math.max(opts.maxOverlayTiles, 256),
+    maxCandidates: Math.max(opts.maxCandidates, 12),
+    maxVerifiedCandidates: Math.max(opts.maxVerifiedCandidates, 8),
+    minComparedPixels: Math.max(16, Math.round(opts.minComparedPixels * scale * scale)),
+    cornerAnchorMode: opts.cornerAnchorMode === "off" ? "off" : "candidate",
+    onProgress: undefined,
+  });
+  if (coarse.status !== "ok" && coarse.status !== "ambiguous") return undefined;
+
+  const estimatedOffsetX = Math.round(coarse.offsetX / scale);
+  const estimatedOffsetY = Math.round(coarse.offsetY / scale);
+  const searchRadius = Math.max(opts.refineRadius, Math.ceil(1 / scale) + 1);
+  const seeds = [];
+  for (let dy = -searchRadius; dy <= searchRadius; dy += 1) {
+    for (let dx = -searchRadius; dx <= searchRadius; dx += 1) {
+      seeds.push({ offsetX: estimatedOffsetX + dx, offsetY: estimatedOffsetY + dy, votes: coarse.score });
+    }
+  }
+  const refined = refineCandidates(source, overlay, seeds, {
+    ...opts,
+    refineRadius: 0,
+  });
+  if (refined.length === 0) return undefined;
+
+  refined.sort(compareVerification);
+  const [best, second] = refined;
+  const status = classifyBest(best, second, opts);
+  const reason = classifyReason(best, second, status, opts);
+  return {
+    status,
+    reason,
+    offsetX: best.offsetX,
+    offsetY: best.offsetY,
+    score: best.score,
+    exactMatchRatio: best.exactMatchRatio,
+    meanAbsoluteError: best.meanAbsoluteError,
+    matchedPixels: best.matchedPixels,
+    mismatchedPixels: best.mismatchedPixels,
+    comparedPixels: best.comparedPixels,
+    candidates: refined.slice(0, opts.maxCandidates),
+    coarseToFine: true,
+  };
+}
+
+function scaleImageNearest(image, scale) {
+  const width = Math.max(1, Math.round(image.width * scale));
+  const height = Math.max(1, Math.round(image.height * scale));
+  const data = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < height; y += 1) {
+    const sy = Math.min(image.height - 1, Math.floor(y / scale));
+    for (let x = 0; x < width; x += 1) {
+      const sx = Math.min(image.width - 1, Math.floor(x / scale));
+      const si = (sy * image.width + sx) * 4;
+      const di = (y * width + x) * 4;
+      data[di] = image.data[si];
+      data[di + 1] = image.data[si + 1];
+      data[di + 2] = image.data[si + 2];
+      data[di + 3] = image.data[si + 3];
+    }
+  }
+  return { width, height, data };
 }
 
 function findCornerCandidates(source, overlay, opts) {
@@ -533,6 +642,14 @@ function classifyBest(best, second, opts) {
     return "ambiguous";
   }
   return "ok";
+}
+
+function classifyReason(best, second, status, opts) {
+  if (status === "ok") return undefined;
+  if (status === "ambiguous") return "too-many-similar-areas";
+  if (best.comparedPixels < opts.minComparedPixels) return "not-enough-overlap";
+  if (best.exactMatchRatio <= 0) return "no-candidate-offsets";
+  return "no-verifiable-candidates";
 }
 
 function compareVerification(a, b) {
