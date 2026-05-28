@@ -2,8 +2,7 @@
 
 An Eagle window plugin for automatically aligning two images, comparing merge previews, fine-tuning offsets, and exporting it.
 
-![](docs/screenshot.png)
-![](docs/screenshot_result.png)
+![](docs/demo.gif)
 
 ## Features
 
