@@ -156,6 +156,9 @@ export function describeFailure(result) {
   if (result.reason === "not-enough-overlap") {
     return "Not enough overlapping area. The images do not appear to share enough of the same visible region. Try images with a larger shared region or adjust the offset manually.";
   }
+  if (result.reason === "match-rate-too-low") {
+    return "Match rate is too low. The images do not appear to share a reliable visible area. Try Precise, choose a more similar image pair, or adjust the offset manually.";
+  }
   if (result.status === "no-match") {
     return "No matching area found. The images may not share enough distinctive detail. Try Precise or adjust the offset manually.";
   }

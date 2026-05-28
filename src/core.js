@@ -12,6 +12,7 @@ const DEFAULT_OPTIONS = {
   minComparedPixels: 1024,
   tolerance: 0,
   ambiguityRatio: 0.98,
+  minExactMatchRatio: 0.01,
   cornerAnchorRatio: 0.97,
   cornerAnchorMode: "accept",
   minBestSecondGap: 0.02,
@@ -263,6 +264,9 @@ function normalizeOptions(options) {
   if (!Number.isFinite(opts.cornerAnchorRatio) || opts.cornerAnchorRatio < 0 || opts.cornerAnchorRatio > 1) {
     throw new TypeError("cornerAnchorRatio must be a ratio between 0 and 1");
   }
+  if (!Number.isFinite(opts.minExactMatchRatio) || opts.minExactMatchRatio < 0 || opts.minExactMatchRatio > 1) {
+    throw new TypeError("minExactMatchRatio must be a ratio between 0 and 1");
+  }
   if (!["accept", "candidate", "off"].includes(opts.cornerAnchorMode)) {
     throw new TypeError("cornerAnchorMode must be one of: accept, candidate, off");
   }
@@ -367,6 +371,7 @@ function findCornerCandidates(source, overlay, opts) {
     .filter((candidate) => (
       candidate.comparedPixels >= opts.minComparedPixels
       && candidate.exactMatchRatio >= opts.cornerAnchorRatio
+      && candidate.exactMatchRatio >= opts.minExactMatchRatio
     ))
     .sort(compareVerification);
   return candidates;
@@ -630,7 +635,7 @@ function classifyBest(best, second, opts) {
   if (best.comparedPixels < opts.minComparedPixels) {
     return "no-match";
   }
-  if (best.exactMatchRatio <= 0) {
+  if (best.exactMatchRatio < opts.minExactMatchRatio) {
     return "no-match";
   }
   if (!second) {
@@ -648,7 +653,7 @@ function classifyReason(best, second, status, opts) {
   if (status === "ok") return undefined;
   if (status === "ambiguous") return "too-many-similar-areas";
   if (best.comparedPixels < opts.minComparedPixels) return "not-enough-overlap";
-  if (best.exactMatchRatio <= 0) return "no-candidate-offsets";
+  if (best.exactMatchRatio < opts.minExactMatchRatio) return "match-rate-too-low";
   return "no-verifiable-candidates";
 }
 

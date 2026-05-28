@@ -122,6 +122,7 @@ test("describeFailure returns English guidance", () => {
   assert.match(describeFailure({ status: "no-match", reason: "no-candidate-offsets" }), /No matching area found/);
   assert.match(describeFailure({ status: "no-match", reason: "no-verifiable-candidates" }), /Found candidates, but none matched well enough/);
   assert.match(describeFailure({ status: "no-match", reason: "not-enough-overlap" }), /Not enough overlapping area/);
+  assert.match(describeFailure({ status: "no-match", reason: "match-rate-too-low" }), /Match rate is too low/);
   assert.match(describeFailure({ status: "ok" }), /succeeded/);
 });
 

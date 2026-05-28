@@ -230,6 +230,52 @@ test("validates corner anchor ratio option", () => {
   }, /cornerAnchorRatio/);
 });
 
+test("validates minimum exact match ratio option", () => {
+  const source = syntheticBase(64, 64);
+
+  assert.throws(() => {
+    findBestAlignment(source, source, {
+      minExactMatchRatio: 1.2,
+    });
+  }, /minExactMatchRatio/);
+});
+
+test("rejects alignments below the default one percent match rate", () => {
+  const source = image(256, 256, () => [0, 0, 0, 255]);
+  const overlay = image(256, 256, (x, y) => (x === 0 && y === 0
+    ? [0, 0, 0, 255]
+    : [255, 255, 255, 255]));
+
+  const result = findBestAlignment(source, overlay, {
+    cornerAnchorRatio: 0,
+    minComparedPixels: 256,
+  });
+
+  assert.equal(result.status, "no-match");
+});
+
+test("reports low match rate when the best candidate is below the required ratio", () => {
+  const source = syntheticBase(96, 80);
+  const overlay = crop(source, 0, 0, 64, 64, (x, y, original) => {
+    if (x < 32 && y < 32) return original;
+    return [255 - original[0], original[1], original[2], original[3]];
+  });
+
+  const result = findBestAlignment(source, overlay, {
+    tileSize: 8,
+    tileStep: 8,
+    sourceStep: 4,
+    refineRadius: 1,
+    maxCandidates: 1,
+    maxVerifiedCandidates: 1,
+    minComparedPixels: 256,
+    minExactMatchRatio: 0.5,
+  });
+
+  assert.equal(result.status, "no-match");
+  assert.equal(result.reason, "match-rate-too-low");
+});
+
 test("reports monotonic progress while finding an alignment", () => {
   const source = syntheticBase(96, 80);
   const overlay = crop(source, 23, 17, 40, 32);
