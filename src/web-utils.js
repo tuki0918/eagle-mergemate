@@ -37,18 +37,6 @@ export const PRESETS = {
     ambiguityRatio: 0.99,
     cornerAnchorMode: "candidate",
   },
-  huge: {
-    tileSize: 32,
-    tileStep: 24,
-    sourceStep: 8,
-    refineRadius: 1,
-    maxOverlayTiles: 384,
-    maxCandidates: 12,
-    maxVerifiedCandidates: 6,
-    minComparedPixels: 4096,
-    ambiguityRatio: 0.97,
-    cornerAnchorMode: "accept",
-  },
 };
 
 const INTEGER_FIELDS = [

@@ -397,7 +397,7 @@ function cancelAlignment() {
     return;
   }
   setBusy(false);
-  setStatus("warn", "Processing cancelled. For large images, try the fast or huge images preset.");
+  setStatus("warn", "Processing cancelled. For large images, try Fast first, then Balanced or Precise.");
 }
 
 function applyPreset(name) {
@@ -1498,7 +1498,6 @@ function updatePresetDisplay() {
     balanced: ["Balanced", "Best balance of accuracy and detail", "#icon-scale"],
     fast: ["Fast", "Quick scan for simple images", "#icon-fast-forward"],
     precise: ["Precise", "More verification for detailed edges", "#icon-star"],
-    huge: ["Huge images", "Reduced sampling for large inputs", "#icon-weight"],
   };
   const [name, description, icon] = labels[els.preset.value] ?? labels.balanced;
   if (els.presetDisplayIcon) els.presetDisplayIcon.setAttribute("href", icon);

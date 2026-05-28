@@ -113,7 +113,8 @@ test("browser entry page exposes mac-style progressive disclosure UI", async () 
   assert.doesNotMatch(html, /value="inpaint"|Inpaint edits|icon-inpaint-edits/);
   assert.match(html, /Best balance of accuracy and detail/);
   assert.match(app, /precise: \["Precise", "More verification for detailed edges", "#icon-star"\]/);
-  assert.match(app, /huge: \["Huge images", "Reduced sampling for large inputs", "#icon-weight"\]/);
+  assert.doesNotMatch(app, /huge: \["Huge images"/);
+  assert.doesNotMatch(html, /<option value="huge">Huge images<\/option>/);
   assert.doesNotMatch(html, /Advanced Tuning/);
   assert.doesNotMatch(html, /id="resetSettingsButton"/);
   assert.doesNotMatch(html, />Basic<\/legend>/);
