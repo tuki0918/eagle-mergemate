@@ -12,7 +12,8 @@ const DEFAULT_OPTIONS = {
   minComparedPixels: 1024,
   tolerance: 0,
   ambiguityRatio: 0.98,
-  sameSizeMatchRatio: 0.97,
+  cornerAnchorRatio: 0.97,
+  cornerAnchorMode: "accept",
   minBestSecondGap: 0.02,
   ignoreTransparent: true,
   overlayPhaseCoverage: true,
@@ -26,10 +27,11 @@ export function findBestAlignment(source, overlay, options = {}) {
   validateMask(opts.validMask, overlay, "validMask");
 
   emitProgress(opts, 0, "Preparing");
-  const sameSizeAlignment = findSameSizeAlignment(source, overlay, opts);
-  if (sameSizeAlignment) {
+  const cornerCandidates = findCornerCandidates(source, overlay, opts);
+  const cornerAlignment = opts.cornerAnchorMode === "accept" ? buildCornerAlignment(cornerCandidates[0]) : undefined;
+  if (cornerAlignment) {
     emitProgress(opts, 1, "Alignment complete");
-    return sameSizeAlignment;
+    return cornerAlignment;
   }
 
   const overlayTiles = selectOverlayTiles(overlay, opts);
@@ -58,7 +60,7 @@ export function findBestAlignment(source, overlay, options = {}) {
   const coarseCandidates = [...votes.values()]
     .sort((a, b) => b.votes - a.votes)
     .slice(0, opts.maxCandidates);
-  const refined = refineCandidates(source, overlay, coarseCandidates, opts);
+  const refined = mergeVerifiedCandidates(refineCandidates(source, overlay, coarseCandidates, opts), cornerCandidates);
   if (refined.length === 0) {
     emitProgress(opts, 1, "No verifiable candidates");
     return noMatch("no-verifiable-candidates");
@@ -234,70 +236,73 @@ function normalizeOptions(options) {
   if (!Number.isInteger(opts.refineRadius) || opts.refineRadius < 0) {
     throw new TypeError("refineRadius must be a non-negative integer");
   }
-  if (!Number.isFinite(opts.sameSizeMatchRatio) || opts.sameSizeMatchRatio < 0 || opts.sameSizeMatchRatio > 1) {
-    throw new TypeError("sameSizeMatchRatio must be a ratio between 0 and 1");
+  if (!Number.isFinite(opts.cornerAnchorRatio) || opts.cornerAnchorRatio < 0 || opts.cornerAnchorRatio > 1) {
+    throw new TypeError("cornerAnchorRatio must be a ratio between 0 and 1");
+  }
+  if (!["accept", "candidate", "off"].includes(opts.cornerAnchorMode)) {
+    throw new TypeError("cornerAnchorMode must be one of: accept, candidate, off");
   }
   return opts;
 }
 
-function findSameSizeAlignment(source, overlay, opts) {
-  if (source.width !== overlay.width || source.height !== overlay.height) {
-    return undefined;
-  }
+function findCornerCandidates(source, overlay, opts) {
+  if (opts.cornerAnchorMode === "off") return [];
+  const cornerOffsets = uniqueOffsets([
+    [0, 0],
+    [source.width - overlay.width, 0],
+    [0, source.height - overlay.height],
+    [source.width - overlay.width, source.height - overlay.height],
+  ]);
+  const candidates = cornerOffsets
+    .map(([offsetX, offsetY]) => verifyOffset(source, overlay, offsetX, offsetY, 0, opts))
+    .filter((candidate) => (
+      candidate.comparedPixels >= opts.minComparedPixels
+      && candidate.exactMatchRatio >= opts.cornerAnchorRatio
+    ))
+    .sort(compareVerification);
+  return candidates;
+}
 
-  let comparedPixels = 0;
-  let matchedPixels = 0;
-  let mismatchedPixels = 0;
-  let absoluteError = 0;
-  for (let i = 0, pixel = 0; i < source.data.length; i += 4, pixel += 1) {
-    if (!isOverlayPixelComparable(overlay, pixel % overlay.width, Math.floor(pixel / overlay.width), opts)) continue;
-    const dr = Math.abs(source.data[i] - overlay.data[i]);
-    const dg = Math.abs(source.data[i + 1] - overlay.data[i + 1]);
-    const db = Math.abs(source.data[i + 2] - overlay.data[i + 2]);
-    const da = Math.abs(source.data[i + 3] - overlay.data[i + 3]);
-    absoluteError += dr + dg + db + da;
-    comparedPixels += 1;
-    if (dr <= opts.tolerance && dg <= opts.tolerance && db <= opts.tolerance && da <= opts.tolerance) {
-      matchedPixels += 1;
-    } else {
-      mismatchedPixels += 1;
-    }
-  }
-
-  if (comparedPixels < opts.minComparedPixels) {
-    return noMatch("insufficient-comparable-pixels");
-  }
-  const exactMatchRatio = matchedPixels / comparedPixels;
-  if (exactMatchRatio < opts.sameSizeMatchRatio) {
-    return undefined;
-  }
-
-  const meanAbsoluteError = absoluteError / (comparedPixels * 4);
-  const score = exactMatchRatio - Math.min(0.5, meanAbsoluteError / 510);
-  const candidate = {
-    offsetX: 0,
-    offsetY: 0,
-    votes: 0,
-    score,
-    exactMatchRatio,
-    meanAbsoluteError,
-    matchedPixels,
-    mismatchedPixels,
-    comparedPixels,
-  };
+function buildCornerAlignment(candidate) {
+  if (!candidate) return undefined;
   return {
     status: "ok",
     reason: undefined,
-    offsetX: 0,
-    offsetY: 0,
-    score,
-    exactMatchRatio,
-    meanAbsoluteError,
-    matchedPixels,
-    mismatchedPixels,
-    comparedPixels,
+    offsetX: candidate.offsetX,
+    offsetY: candidate.offsetY,
+    score: candidate.score,
+    exactMatchRatio: candidate.exactMatchRatio,
+    meanAbsoluteError: candidate.meanAbsoluteError,
+    matchedPixels: candidate.matchedPixels,
+    mismatchedPixels: candidate.mismatchedPixels,
+    comparedPixels: candidate.comparedPixels,
     candidates: [candidate],
   };
+}
+
+function uniqueOffsets(offsets) {
+  const seen = new Set();
+  const unique = [];
+  for (const [offsetX, offsetY] of offsets) {
+    const key = `${offsetX},${offsetY}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push([offsetX, offsetY]);
+  }
+  return unique;
+}
+
+function mergeVerifiedCandidates(primary, extra) {
+  if (extra.length === 0) return primary;
+  const byOffset = new Map();
+  for (const candidate of [...primary, ...extra]) {
+    const key = `${candidate.offsetX},${candidate.offsetY}`;
+    const existing = byOffset.get(key);
+    if (!existing || compareVerification(candidate, existing) < 0) {
+      byOffset.set(key, candidate);
+    }
+  }
+  return [...byOffset.values()].sort(compareVerification);
 }
 
 function validateImage(image, name) {

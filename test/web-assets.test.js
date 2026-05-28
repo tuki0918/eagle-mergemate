@@ -289,6 +289,12 @@ test("worker message listener remains active after progress messages", async () 
   assert.doesNotMatch(app, /worker\.addEventListener\("message", handleMessage,\s*\{ once: true \}\);/);
 });
 
+test("web app passes preset-only detection strategy options", async () => {
+  const app = await readFile(new URL("../web/app.js", import.meta.url), "utf8");
+
+  assert.match(app, /function readOptionValues\(\) \{[\s\S]*const values = \{ \.\.\.getPresetOptions\(els\.preset\.value\) \};[\s\S]*return buildAlignmentOptions\(values\);/);
+});
+
 test("result preview mouse wheel zooms and shift wheel pans", async () => {
   const app = await readFile(new URL("../web/app.js", import.meta.url), "utf8");
 

@@ -8,19 +8,21 @@ export const DEFAULT_WEB_OPTIONS = {
   maxVerifiedCandidates: 8,
   minComparedPixels: 4096,
   ambiguityRatio: 0.98,
+  cornerAnchorMode: "accept",
 };
 
 export const PRESETS = {
   fast: {
     tileSize: 32,
     tileStep: 24,
-    sourceStep: 8,
+    sourceStep: 4,
     refineRadius: 1,
     maxOverlayTiles: 256,
     maxCandidates: 10,
     maxVerifiedCandidates: 5,
     minComparedPixels: 2048,
     ambiguityRatio: 0.96,
+    cornerAnchorMode: "accept",
   },
   balanced: DEFAULT_WEB_OPTIONS,
   precise: {
@@ -33,10 +35,11 @@ export const PRESETS = {
     maxVerifiedCandidates: 12,
     minComparedPixels: 8192,
     ambiguityRatio: 0.99,
+    cornerAnchorMode: "candidate",
   },
   huge: {
-    tileSize: 48,
-    tileStep: 32,
+    tileSize: 32,
+    tileStep: 24,
     sourceStep: 8,
     refineRadius: 1,
     maxOverlayTiles: 384,
@@ -44,6 +47,7 @@ export const PRESETS = {
     maxVerifiedCandidates: 6,
     minComparedPixels: 4096,
     ambiguityRatio: 0.97,
+    cornerAnchorMode: "accept",
   },
 };
 
@@ -65,6 +69,7 @@ export function buildAlignmentOptions(values = {}) {
   }
   options.refineRadius = parseNonNegativeInteger(values.refineRadius, DEFAULT_WEB_OPTIONS.refineRadius);
   options.ambiguityRatio = parseRatio(values.ambiguityRatio, DEFAULT_WEB_OPTIONS.ambiguityRatio);
+  options.cornerAnchorMode = parseCornerAnchorMode(values.cornerAnchorMode, DEFAULT_WEB_OPTIONS.cornerAnchorMode);
   return options;
 }
 
@@ -414,6 +419,10 @@ function pixelDiff(baseData, baseIndex, overlayData, overlayIndex) {
 function parsePositiveInteger(value, fallback) {
   const parsed = Number.parseInt(String(value ?? ""), 10);
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function parseCornerAnchorMode(value, fallback) {
+  return ["accept", "candidate", "off"].includes(value) ? value : fallback;
 }
 
 function formatPercent(ratio) {

@@ -120,10 +120,70 @@ test("short-circuits near-identical same-size images", () => {
   assert.equal(result.status, "ok");
   assert.equal(result.offsetX, 0);
   assert.equal(result.offsetY, 0);
-  assert.ok(result.exactMatchRatio > 0.97);
+  assert.ok(result.exactMatchRatio >= 0.97);
   assert.ok(result.mismatchedPixels > 0);
   assert.deepEqual(result.candidates.map((candidate) => [candidate.offsetX, candidate.offsetY]), [[0, 0]]);
   assert.equal(events.includes("Selecting feature tiles"), false);
+});
+
+test("short-circuits near-identical corner-aligned images", () => {
+  const source = syntheticBase(240, 180);
+  const overlay = crop(source, 80, 60, 160, 120, (x, y, original) => {
+    if (x < 68 || x >= 92 || y < 48 || y >= 72) return original;
+    return [original[0], 255 - original[1], original[2], original[3]];
+  });
+  const events = [];
+
+  const result = findBestAlignment(source, overlay, {
+    tileSize: 8,
+    tileStep: 8,
+    sourceStep: 4,
+    refineRadius: 1,
+    maxCandidates: 8,
+    minComparedPixels: 256,
+    onProgress: (event) => events.push(event.phase),
+  });
+
+  assert.equal(result.status, "ok");
+  assert.equal(result.offsetX, 80);
+  assert.equal(result.offsetY, 60);
+  assert.ok(result.exactMatchRatio >= 0.97);
+  assert.ok(result.mismatchedPixels > 0);
+  assert.deepEqual(result.candidates.map((candidate) => [candidate.offsetX, candidate.offsetY]), [[80, 60]]);
+  assert.equal(events.includes("Selecting feature tiles"), false);
+});
+
+test("can use corner anchors as candidates without short-circuiting", () => {
+  const source = syntheticBase(240, 180);
+  const overlay = crop(source, 80, 60, 160, 120, (x, y, original) => {
+    if (x < 68 || x >= 92 || y < 48 || y >= 72) return original;
+    return [original[0], 255 - original[1], original[2], original[3]];
+  });
+  const events = [];
+
+  const result = findBestAlignment(source, overlay, {
+    tileSize: 8,
+    tileStep: 8,
+    sourceStep: 4,
+    refineRadius: 1,
+    maxCandidates: 8,
+    minComparedPixels: 256,
+    cornerAnchorMode: "candidate",
+    onProgress: (event) => events.push(event.phase),
+  });
+
+  assert.equal(events.includes("Selecting feature tiles"), true);
+  assert.ok(result.candidates.some((candidate) => candidate.offsetX === 80 && candidate.offsetY === 60));
+});
+
+test("validates corner anchor ratio option", () => {
+  const source = syntheticBase(64, 64);
+
+  assert.throws(() => {
+    findBestAlignment(source, source, {
+      cornerAnchorRatio: 1.2,
+    });
+  }, /cornerAnchorRatio/);
 });
 
 test("reports monotonic progress while finding an alignment", () => {

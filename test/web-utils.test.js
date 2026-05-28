@@ -29,6 +29,7 @@ test("buildAlignmentOptions parses positive integer and numeric fields", () => {
     maxVerifiedCandidates: "6",
     minComparedPixels: "2048",
     ambiguityRatio: "0.91",
+    cornerAnchorMode: "candidate",
   });
 
   assert.deepEqual(options, {
@@ -41,6 +42,7 @@ test("buildAlignmentOptions parses positive integer and numeric fields", () => {
     maxVerifiedCandidates: 6,
     minComparedPixels: 2048,
     ambiguityRatio: 0.91,
+    cornerAnchorMode: "candidate",
   });
 });
 
@@ -57,6 +59,7 @@ test("buildAlignmentOptions falls back for invalid values", () => {
   assert.equal(options.sourceStep, 4);
   assert.equal(options.refineRadius, 1);
   assert.equal(options.ambiguityRatio, 0.98);
+  assert.equal(options.cornerAnchorMode, "accept");
 });
 
 test("normalizeBackgroundColor accepts hex colors and falls back to white", () => {
@@ -90,9 +93,14 @@ test("createDifferenceImage highlights changed pixels", () => {
 });
 
 test("getPresetOptions returns known alignment presets", () => {
-  assert.equal(getPresetOptions("fast").sourceStep, 8);
+  assert.equal(getPresetOptions("fast").sourceStep, 4);
+  assert.equal(getPresetOptions("fast").cornerAnchorMode, "accept");
   assert.equal(getPresetOptions("precise").sourceStep, 1);
+  assert.equal(getPresetOptions("precise").cornerAnchorMode, "candidate");
+  assert.equal(getPresetOptions("huge").tileSize, 32);
+  assert.equal(getPresetOptions("huge").tileStep, 24);
   assert.equal(getPresetOptions("unknown").sourceStep, 4);
+  assert.equal(getPresetOptions("unknown").cornerAnchorMode, "accept");
   assert.deepEqual(Object.keys(PRESETS), ["fast", "balanced", "precise", "huge"]);
 });
 
@@ -320,5 +328,6 @@ test("buildDefaultSettings returns reset values for controls", () => {
     maxVerifiedCandidates: 8,
     minComparedPixels: 4096,
     ambiguityRatio: 0.98,
+    cornerAnchorMode: "accept",
   });
 });

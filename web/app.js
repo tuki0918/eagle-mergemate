@@ -916,7 +916,7 @@ function toTransferableImage(image) {
 }
 
 function readOptionValues() {
-  const values = {};
+  const values = { ...getPresetOptions(els.preset.value) };
   for (const id of optionIds) {
     values[id] = document.querySelector(`#${id}`).value;
   }
