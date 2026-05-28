@@ -12,7 +12,7 @@ export const DEFAULT_WEB_OPTIONS = {
 };
 
 export const PRESETS = {
-  balanced: DEFAULT_WEB_OPTIONS,
+  standard: DEFAULT_WEB_OPTIONS,
   precise: {
     tileSize: 24,
     tileStep: 8,
@@ -65,7 +65,7 @@ export function buildCandidateStatsSummary(candidate = {}, stats) {
 export function buildDefaultSettings() {
   return {
     order: "a-base",
-    preset: "balanced",
+    preset: "standard",
     backgroundColor: "#ffffff",
     outputMode: "union",
     transparentBackground: true,
@@ -128,7 +128,7 @@ export function normalizeBackgroundColor(value) {
 }
 
 export function getPresetOptions(name) {
-  return { ...(PRESETS[name] ?? PRESETS.balanced) };
+  return { ...(PRESETS[name] ?? PRESETS.standard) };
 }
 
 export function describeFailure(result) {

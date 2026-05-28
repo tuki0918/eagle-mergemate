@@ -1495,10 +1495,10 @@ function updateBackgroundChoiceSelection(explicitChoice) {
 
 function updatePresetDisplay() {
   const labels = {
-    balanced: ["Standard", "Standard matching for most images", "#icon-scale"],
+    standard: ["Standard", "Standard matching for most images", "#icon-scale"],
     precise: ["Precise", "More verification for detailed edges", "#icon-star"],
   };
-  const [name, description, icon] = labels[els.preset.value] ?? labels.balanced;
+  const [name, description, icon] = labels[els.preset.value] ?? labels.standard;
   if (els.presetDisplayIcon) els.presetDisplayIcon.setAttribute("href", icon);
   if (els.presetDisplayName) els.presetDisplayName.textContent = name;
   if (els.presetDisplayDescription) els.presetDisplayDescription.textContent = description;
