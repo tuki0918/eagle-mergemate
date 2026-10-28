@@ -14,7 +14,8 @@ Two partially overlapping images are aligned automatically and merged into one.
 
 | Input A | Input B | Merged result |
 | :---: | :---: | :---: |
-| <img src="docs/samples/input-top.png" width="260"> | <img src="docs/samples/input-bottom.png" width="260"> | <img src="docs/samples/result.png" width="180"> |
+| <img src="docs/sample1/input-top.png" width="260"> | <img src="docs/sample1/input-bottom.png" width="260"> | <img src="docs/sample1/result.png" width="180"> |
+| <img src="docs/sample2/input-top.png" width="260"> | <img src="docs/sample2/input-bottom.png" width="260"> | <img src="docs/sample2/result.png" width="180"> |
 
 ## Features
 
