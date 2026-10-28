@@ -365,3 +365,9 @@ test("web app logs diagnostics to console instead of rendering diagnostics UI", 
   assert.doesNotMatch(app, /\[MergeMate\] images|\[MergeMate\] alignment|\[MergeMate\] preflight|\[MergeMate\] image-read-error/);
   assert.doesNotMatch(app, /imageInfo|preflightStatus|preflightInfo|processingLog|diffStats|outputPrecheck/);
 });
+
+test("image files are decoded without color conversion so re-saved copies keep exact pixels", async () => {
+  const app = await readFile(new URL("../web/app.js", import.meta.url), "utf8");
+
+  assert.match(app, /createImageBitmap\(file, \{ colorSpaceConversion: "none" \}\)/);
+});

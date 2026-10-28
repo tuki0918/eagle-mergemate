@@ -968,7 +968,9 @@ async function readImageFile(file, label) {
   if (file.size > MAX_IMAGE_FILE_BYTES) {
     throw new Error(`${label} exceeds the 100MB limit`);
   }
-  const bitmap = await createImageBitmap(file);
+  // Matching compares exact pixel values, so decode the stored pixels as-is. Re-saved copies often swap
+  // the sRGB chunk for gAMA/cHRM, and color conversion would shift nearly every pixel by a few levels.
+  const bitmap = await createImageBitmap(file, { colorSpaceConversion: "none" });
   try {
     const canvas = document.createElement("canvas");
     canvas.width = bitmap.width;
