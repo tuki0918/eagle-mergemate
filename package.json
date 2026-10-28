@@ -10,6 +10,7 @@
     "./png-node": "./src/png-node.js"
   },
   "scripts": {
+    "build": "node scripts/build.js",
     "test": "node --test",
     "web": "node scripts/serve-web.js"
   },
