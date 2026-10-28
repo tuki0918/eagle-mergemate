@@ -323,6 +323,30 @@ test("ignores masked inpaint pixels during matching and verification", () => {
   assert.equal(result.mismatchedPixels, 0);
 });
 
+test("aligns flat-color illustrations whose tiles have only a few sharp edges", () => {
+  const source = image(320, 240, (x, y) => {
+    if ((x - 160) ** 2 + (y - 260) ** 2 < 150 ** 2 && (x - 160) ** 2 + (y - 260) ** 2 > 120 ** 2) {
+      return [240, 70, 60, 255];
+    }
+    if (y > 170 - Math.abs(x - 230) * 0.7) return [16, 168, 168, 255];
+    return [108, 200, 252, 255];
+  });
+  const overlay = crop(source, 112, 76, 180, 150);
+
+  const result = findBestAlignment(source, overlay, {
+    tileSize: 32,
+    tileStep: 16,
+    sourceStep: 4,
+    refineRadius: 1,
+    minComparedPixels: 4096,
+    cornerAnchorMode: "off",
+  });
+
+  assert.equal(result.status, "ok");
+  assert.equal(result.offsetX, 112);
+  assert.equal(result.offsetY, 76);
+});
+
 test("rejects repeated low-information imagery as ambiguous or no-match", () => {
   const source = image(80, 60, (x, y) => {
     const v = ((Math.floor(x / 8) + Math.floor(y / 8)) % 2) * 255;

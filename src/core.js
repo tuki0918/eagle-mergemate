@@ -77,7 +77,8 @@ export function findBestAlignment(source, overlay, options = {}) {
   }
 
   refined.sort(compareVerification);
-  const [best, second] = refined;
+  const [best] = refined;
+  const second = findCompetitor(refined, best);
   const status = classifyBest(best, second, opts);
   const reason = classifyReason(best, second, status, opts);
 
@@ -320,7 +321,8 @@ function findCoarseToFineAlignment(source, overlay, opts) {
   if (refined.length === 0) return undefined;
 
   refined.sort(compareVerification);
-  const [best, second] = refined;
+  const [best] = refined;
+  const second = findCompetitor(refined, best);
   const status = classifyBest(best, second, opts);
   const reason = classifyReason(best, second, status, opts);
   return {
@@ -456,17 +458,17 @@ function selectOverlayTiles(overlay, opts) {
         for (let x = xPhase; x <= overlay.width - opts.tileSize; x += phasedTileStep) {
           const metrics = tileMetrics(overlay, x, y, opts);
           if (!metrics.usable) continue;
-          if (
-            metrics.variance < opts.minTileVariance ||
-            metrics.edgeEnergy < opts.minEdgeEnergy ||
-            metrics.uniqueColors < opts.minUniqueColors
-          ) {
-            continue;
-          }
+          const strong = metrics.variance >= opts.minTileVariance
+            && metrics.edgeEnergy >= opts.minEdgeEnergy
+            && metrics.uniqueColors >= opts.minUniqueColors;
+          // Flat illustrations rarely reach the strong thresholds; any non-uniform tile (even faint noise)
+          // still pins an exact offset, so keep it as a lower-ranked fallback.
+          if (!strong && !(metrics.variance > 0)) continue;
           tiles.push({
             x,
             y,
             hash: hashTile(overlay, x, y, opts),
+            strong,
             infoScore: metrics.variance + metrics.edgeEnergy + metrics.uniqueColors * 4,
           });
         }
@@ -478,8 +480,35 @@ function selectOverlayTiles(overlay, opts) {
     }
   }
 
-  tiles.sort((a, b) => b.infoScore - a.infoScore);
-  return tiles;
+  return interleaveByRegion(tiles, overlay);
+}
+
+// Rank tiles by information but round-robin across a coarse grid, so a small overlap region
+// still contributes tiles when the most detailed areas lie outside it.
+function interleaveByRegion(tiles, overlay) {
+  const grid = 4;
+  const cellWidth = Math.max(1, Math.ceil(overlay.width / grid));
+  const cellHeight = Math.max(1, Math.ceil(overlay.height / grid));
+  const buckets = new Map();
+  for (const tile of tiles) {
+    const key = Math.floor(tile.y / cellHeight) * grid + Math.floor(tile.x / cellWidth);
+    const bucket = buckets.get(key);
+    if (bucket) bucket.push(tile);
+    else buckets.set(key, [tile]);
+  }
+  const queues = [...buckets.values()].map((bucket) => bucket.sort(compareTileInformation));
+  const ordered = [];
+  for (let rank = 0; ordered.length < tiles.length; rank += 1) {
+    for (const queue of queues) {
+      if (rank < queue.length) ordered.push(queue[rank]);
+    }
+  }
+  return ordered;
+}
+
+function compareTileInformation(a, b) {
+  if (a.strong !== b.strong) return a.strong ? -1 : 1;
+  return b.infoScore - a.infoScore;
 }
 
 function tileMetrics(image, x0, y0, opts) {
@@ -647,6 +676,14 @@ function classifyBest(best, second, opts) {
     return "ambiguous";
   }
   return "ok";
+}
+
+// Offsets a pixel or two away from the best one always score close on smooth or flat content,
+// so only a distinct location counts as a competing match.
+function findCompetitor(sorted, best) {
+  return sorted.find((candidate) => (
+    Math.max(Math.abs(candidate.offsetX - best.offsetX), Math.abs(candidate.offsetY - best.offsetY)) > 2
+  ));
 }
 
 function classifyReason(best, second, status, opts) {
