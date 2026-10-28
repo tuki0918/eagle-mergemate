@@ -8,6 +8,14 @@ An Eagle window plugin for automatically aligning two images, comparing merge pr
 
 ![](docs/demo.gif)
 
+## Example
+
+Two partially overlapping images are aligned automatically and merged into one.
+
+| Input A | Input B | Merged result |
+| :---: | :---: | :---: |
+| <img src="docs/samples/input-top.png" width="260"> | <img src="docs/samples/input-bottom.png" width="260"> | <img src="docs/samples/result.png" width="180"> |
+
 ## Features
 
 - Align two images automatically
