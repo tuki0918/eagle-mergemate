@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.1
+
+- Improved alignment accuracy for flat-color illustrations.
+- Fixed image decoding to preserve exact pixel values without color conversion.
+- Added `npm run build` to output only the plugin runtime files to `dist/`.
+
 ## v0.2.0
 
 - Simplified Detection Mode to `Standard` and `Precise`.
