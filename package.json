@@ -11,6 +11,7 @@
   },
   "scripts": {
     "build": "node scripts/build.js",
+    "diagram": "node scripts/diagram.js",
     "test": "node --test",
     "web": "node scripts/serve-web.js"
   },
