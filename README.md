@@ -17,6 +17,16 @@ Two partially overlapping images are aligned automatically and merged into one.
 | <img src="docs/sample1/input-top.png" width="260"> | <img src="docs/sample1/input-bottom.png" width="260"> | <img src="docs/sample1/result.png" width="180"> |
 | <img src="docs/sample2/input-top.png" width="260"> | <img src="docs/sample2/input-bottom.png" width="260"> | <img src="docs/sample2/result.png" width="180"> |
 
+When the overlapping area differs between the two images, you choose which image goes on top. Here the differing cells are red in A and blue in B.
+
+| Input A | Input B |
+| :---: | :---: |
+| <img src="docs/sample3/input-a.png" width="260"> | <img src="docs/sample3/input-b.png" width="260"> |
+
+| A on top | B on top |
+| :---: | :---: |
+| <img src="docs/sample3/result-a-on-top.png" width="380"> | <img src="docs/sample3/result-b-on-top.png" width="380"> |
+
 ## Features
 
 - Align two images automatically
